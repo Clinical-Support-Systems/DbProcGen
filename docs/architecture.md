@@ -447,6 +447,7 @@ Comprehensive test coverage validates the proof:
 - **ArtifactGeneratorTests:** Wrapper/worker creation, stale file cleanup, deterministic ordering, manifest validation
 - **GeneratorSnapshotTests:** Snapshot verification of generated SQL content, file order, determinism across runs
 - **RuntimeRouteResolverTests:** Manifest-driven route resolution behavior and failure cases
+- **Database integration tests:** SQL project build, generated contract assertions, and an opt-in Testcontainers execution-level SQL seam (`DBPROCGEN_ENABLE_TESTCONTAINERS_SQL=true`) for wrapper/worker runtime behavior checks
 
 All tests use TUnit with async assertions.
 

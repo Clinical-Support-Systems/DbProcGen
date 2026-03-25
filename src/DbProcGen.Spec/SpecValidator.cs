@@ -257,15 +257,6 @@ public static partial class SpecValidator
             }
         }
 
-        if (routingRules.DefaultRoute is not null && !routeNames.Contains(routingRules.DefaultRoute))
-        {
-            diagnostics.Add(new SpecDiagnostic(
-                "DBPROC157",
-                "$.routingRules.defaultRoute",
-                SpecDiagnosticSeverity.Error,
-                $"Default route '{routingRules.DefaultRoute}' must match a declared route name."));
-        }
-
         if (routingRules.DefaultRoute is not null)
         {
             diagnostics.Add(new SpecDiagnostic(

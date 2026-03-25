@@ -172,6 +172,9 @@ dotnet test --project tests\DbProcGen.Generator.Tests
 dotnet test --project tests\DbProcGen.Runtime.Tests
 dotnet test --project tests\DbProcGen.Database.Tests
 
+# Full suite
+dotnet test --solution DbProcGen.slnx
+
 # Build SQL project (compiles Schema/ + Generated/ into DACPAC)
 dotnet build database\DbProcGen.Database.sqlproj
 ```
@@ -311,6 +314,17 @@ The manifest provides operational visibility: which worker procedures exist, und
 - **Sample-specific today:** The only concrete family is `GetUsersByFilter` in `specs/users/GetUsersByFilter.dbproc.json`.
 - **Framework-level implemented:** parse/validate pipeline, deterministic wrapper/worker generation, manifest emission, sqlproj integration, runtime manifest resolver.
 - **Framework work still remaining:** richer reusable worker-body authoring model beyond route-level `sqlBody`, broader multi-family coverage, deeper execution-level database test harness.
+
+### Optional execution-level SQL test seam
+
+`tests/DbProcGen.Database.Tests` now includes a Testcontainers-based execution test path against SQL Server. To enable it:
+
+```powershell
+$env:DBPROCGEN_ENABLE_TESTCONTAINERS_SQL = "true"
+dotnet test --project tests\DbProcGen.Database.Tests
+```
+
+If `DBPROCGEN_ENABLE_TESTCONTAINERS_SQL` is not set to `true`, execution-level tests are skipped and fast tests still run.
 
 ## Routing semantics (SQL + runtime) are intentionally aligned
 

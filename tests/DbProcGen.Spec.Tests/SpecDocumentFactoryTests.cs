@@ -276,5 +276,6 @@ public class SpecDocumentFactoryTests
 
         await Assert.That(document.IsValid).IsFalse();
         await Assert.That(document.Diagnostics.Select(static d => d.Code)).Contains("DBPROC159");
+        await Assert.That(document.Diagnostics.Select(static d => d.Code).Contains("DBPROC157")).IsFalse();
     }
 }
