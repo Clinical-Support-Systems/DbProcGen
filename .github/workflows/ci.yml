@@ -19,7 +19,7 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore DbProcGen.slnx
 
       - name: Build solution (ADR 0006, ADR 0001)
         run: dotnet build DbProcGen.slnx --no-restore --nologo
@@ -37,7 +37,7 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore DbProcGen.slnx
 
       - name: Unit tests - parsing/validation (ADR 0003, ADR 0001)
         run: dotnet test --project tests/DbProcGen.Spec.Tests --no-build --nologo
@@ -55,7 +55,7 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore DbProcGen.slnx
 
       - name: Snapshot tests - generated artifacts (ADR 0005, ADR 0004)
         run: dotnet test --project tests/DbProcGen.Tool.Tests --no-build --nologo
@@ -73,7 +73,7 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore DbProcGen.slnx
 
       - name: Placeholder integration tests - SQL deployment and wrapper contract (ADR 0002, ADR 0004)
         run: dotnet test --project tests/DbProcGen.Database.Tests --no-build --nologo
@@ -91,7 +91,7 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore DbProcGen.slnx
 
       - name: Regenerate artifacts (ADR 0005)
         run: dotnet run --project src/DbProcGen.Tool -- generate
@@ -118,7 +118,7 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore DbProcGen.slnx
 
       - name: Build SQL project (ADR 0002)
         run: dotnet build database/DbProcGen.Database.sqlproj --nologo
