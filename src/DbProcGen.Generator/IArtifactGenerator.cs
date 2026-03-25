@@ -1,6 +1,6 @@
 using DbProcGen.Model;
 
-namespace DbProcGen.Tool.Services;
+namespace DbProcGen.Generator;
 
 public interface IArtifactGenerator
 {

@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using DbProcGen.Model;
 
-namespace DbProcGen.Tool.Services;
+namespace DbProcGen.Generator;
 
 public sealed class ArtifactGenerator : IArtifactGenerator
 {
@@ -58,7 +58,6 @@ public sealed class ArtifactGenerator : IArtifactGenerator
             deletedFiles.Add(staleFile);
         }
 
-        // Generate manifest with deterministic timestamp (use "generation-manifest" for determinism)
         var manifest = new GenerationManifest("generation-manifest", manifestFamilies);
         var manifestFile = GenerateManifest(manifest, outputDirectory);
         generatedFiles.Add(manifestFile);

@@ -32,7 +32,7 @@ dotnet run --project src/DbProcGen.Tool -- generate|validate|clean
 **Projects and their roles:**
 - **DbProcGen.Model** — Immutable sealed records (`DbProcSpec` and children) defining the spec domain model
 - **DbProcGen.Spec** — `SpecParser` (JSON→model), `SpecValidator` (semantic rules), `SpecDocumentFactory` (composed parse+validate entry point), diagnostic system
-- **DbProcGen.Generator** — SQL generation pipeline (skeleton — not yet implemented)
+- **DbProcGen.Generator** — SQL generation pipeline (`ArtifactGenerator`) emitting wrapper/worker SQL + deterministic generation manifest
 - **DbProcGen.Tool** — CLI entry point with `generate`, `validate`, `clean` subcommands (skeleton)
 - **DbProcGen.Runtime** — Optional .NET helpers for runtime routing (skeleton)
 
@@ -58,3 +58,4 @@ dotnet run --project src/DbProcGen.Tool -- generate|validate|clean
 - Spec files live under `specs/` with `.dbproc.json` extension
 - Hand-authored SQL goes in `database/Schema/`; generated SQL goes in `database/Generated/`
 - Solution file is the newer `.slnx` format (`DbProcGen.slnx`)
+

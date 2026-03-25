@@ -1,4 +1,5 @@
 using DbProcGen.Spec;
+using DbProcGen.Generator;
 using DbProcGen.Tool.Services;
 
 namespace DbProcGen.Tool.Commands;

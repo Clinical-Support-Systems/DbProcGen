@@ -1,5 +1,5 @@
 using DbProcGen.Model;
-using DbProcGen.Tool.Services;
+using DbProcGen.Generator;
 using TUnit.Core;
 
 namespace DbProcGen.Tool.Tests;

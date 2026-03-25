@@ -61,7 +61,7 @@ Validation fails the build if any spec is invalid, preventing broken SQL from be
 
 **ADR Reference:** [ADR 0001 - Build-time generation](adr/0001-build-time-generation.md)
 
-The generator (`DbProcGen.Generator`) processes validated specs and emits SQL:
+The generator (`DbProcGen.Generator`) processes validated specs and emits SQL (implementation lives in `src/DbProcGen.Generator/ArtifactGenerator.cs`):
 
 1. **Deterministic routing** — For each spec, compute the exact set of workers to generate (based on specialization axes).
 2. **Worker generation** — Emit one `.sql` file per worker variant with deterministic names.
@@ -441,3 +441,4 @@ All tests use TUnit with async assertions.
 - [ADR 0005](adr/0005-deterministic-generated-artifacts.md) — Deterministic artifacts
 - [ADR 0006](adr/0006-cli-first-roslyn-optional.md) — CLI-first approach
 - [specs/README.md](../specs/README.md) — How to write specs
+
