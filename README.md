@@ -4,6 +4,11 @@
 
 **Build-time generation of specialized stored procedures from declarative specs while maintaining a stable public SQL API.**
 
+## New here? Start here
+
+- [`docs/getting-started.md`](docs/getting-started.md) — practical first-run walkthrough and first tinkering task
+- [`docs/architecture.md`](docs/architecture.md) — detailed architecture and ADR mapping
+
 ## Problem Statement
 
 SQL Server stored procedures often serve multiple distinct usage patterns with different plan-shaping needs:
@@ -213,9 +218,9 @@ GitHub Actions CI (`.github/workflows/ci.yml`) enforces the initial testing and 
 
 ## Visual Studio 2026 Usage
 
-- For daily coding in Visual Studio 2026, open `DbProcGen.Dev.slnx` (excludes the SQL project to avoid sqlproj load stalls).
-- Keep CLI/full-path builds on `DbProcGen.slnx` as-is.
-- Build the SQL project separately when needed:
+- Open `DbProcGen.slnx` for day-to-day development.
+- The database project now loads normally in Visual Studio as `database/DbProcGen.Database.csproj`.
+- CLI and CI should continue to use the same solution/project commands:
 
 ```bash
 dotnet build database/DbProcGen.Database.csproj
