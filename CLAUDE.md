@@ -34,7 +34,7 @@ dotnet run --project src/DbProcGen.Tool -- generate|validate|clean
 - **DbProcGen.Spec** — `SpecParser` (JSON→model), `SpecValidator` (semantic rules), `SpecDocumentFactory` (composed parse+validate entry point), diagnostic system
 - **DbProcGen.Generator** — SQL generation pipeline (`ArtifactGenerator`) emitting wrapper/worker SQL + deterministic generation manifest
 - **DbProcGen.Tool** — CLI entry point with `generate`, `validate`, `clean` subcommands (skeleton)
-- **DbProcGen.Runtime** — Optional .NET helpers for runtime routing (skeleton)
+- **DbProcGen.Runtime** — v1 manifest-driven runtime route resolver (`RuntimeRouteResolver`) for diagnostics/preflight checks
 
 **Spec processing flow:** Call `SpecDocumentFactory.ParseAndValidate(json)` which runs `SpecParser.Parse` then `SpecValidator.Validate`, merging diagnostics with deterministic ordering.
 

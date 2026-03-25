@@ -27,6 +27,7 @@ This project focuses on:
 - **Generation:** CLI-first tool to read specs and emit deterministic SQL artifacts
 - **Deployment:** SQL Database Project (`.sqlproj`) as the source of truth
 - **Output:** Wrapper procedures (stable public API) + specialized worker procedures (implementation variants)
+- **Runtime:** Manifest-based .NET route resolver for diagnostics and preflight route checks
 - **Validation:** Build-time checks to ensure generated SQL is deterministic and consistent
 
 Out of scope for v1:
@@ -43,7 +44,7 @@ src/
   DbProcGen.Spec/         # Spec model, parser, validator
   DbProcGen.Generator/    # Core generation pipeline
   DbProcGen.Model/        # Shared domain types
-  DbProcGen.Runtime/      # Optional runtime-facing routing helpers
+  DbProcGen.Runtime/      # Runtime helper for manifest-based route resolution
 
 tests/
   DbProcGen.Spec.Tests/       # Spec parsing and validation tests
@@ -82,6 +83,28 @@ flowchart LR
 4. **Build** — `dotnet build database/DbProcGen.Database.sqlproj` compiles into a DACPAC
 5. **Review** — PR shows exact SQL changes for code review
 6. **Deploy** — Standard DACPAC deployment to SQL Server / Azure SQL
+7. **Runtime diagnostics (optional)** — resolve expected worker routes from committed manifest data in .NET
+
+### Runtime helper usage (v1)
+
+`DbProcGen.Runtime` can load generated manifest metadata and resolve the worker route your inputs map to:
+
+```csharp
+using DbProcGen.Runtime;
+
+var resolver = RuntimeRouteResolver.LoadFromManifestFile("database/Generated/generation-manifest.json");
+
+var route = resolver.Resolve("GetUsersByFilter", new Dictionary<string, string>
+{
+    ["FilterTypeAxis"] = "Name",
+    ["PagingAxis"] = "true"
+});
+
+// [dbo].[GetUsersByFilter_name_paged]
+Console.WriteLine(route.FullyQualifiedWorkerName);
+```
+
+This is intended for diagnostics/preflight checks and test assertions. SQL wrapper routing remains the authoritative execution path.
 
 ## Wrapper and Worker Pattern
 
@@ -173,6 +196,10 @@ GitHub Actions CI (`.github/workflows/ci.yml`) enforces the initial testing and 
   - Verifies SQL project build succeeds and that generated wrapper/worker contract shape is present.
   - Tied to **ADR 0002** (SQL project source of truth) and **ADR 0004** (stable wrapper boundary).
 
+- **Runtime helper tests** (`tests/DbProcGen.Runtime.Tests`)  
+  - Verifies manifest-driven route resolution and explicit failures for unmatched routes.
+  - Tied to **ADR 0007** (runtime helper in v1) and **ADR 0004** (wrapper/worker routing semantics).
+
 - **Slopwatch quality gate**
   - Runs `slopwatch analyze -d . --fail-on error --output json` in CI.
   - Uses repository baseline/config under `.slopwatch/` to fail builds on new slop issues.
@@ -201,6 +228,7 @@ These ADRs are binding constraints for v1. For detailed context and rationale, s
 - **[ADR 0004](docs/adr/0004-wrapper-and-worker-procedures.md)** — Wrapper + worker procedure pattern
 - **[ADR 0005](docs/adr/0005-deterministic-generated-artifacts.md)** — Commit deterministic artifacts to git
 - **[ADR 0006](docs/adr/0006-cli-first-roslyn-optional.md)** — CLI-first; Roslyn integration deferred
+- **[ADR 0007](docs/adr/0007-runtime-manifest-routing-helper-v1.md)** — Runtime manifest-based route resolver (v1)
 
 ## Status: End-to-End Proof Complete
 
@@ -217,6 +245,9 @@ The repository demonstrates a complete end-to-end generation flow for one proced
     - `dbo_GetUsersByFilter_name_paged.sql` (paginated name search using OFFSET/FETCH)
     - `dbo_GetUsersByFilter_email_unpaged.sql` (unpaged email lookup with direct equality)
   - Manifest: `generation-manifest.json` (shows which variants were emitted and why)
+- **Runtime helper:** `src/DbProcGen.Runtime/RuntimeRouteResolver.cs`
+  - Loads `generation-manifest.json`
+  - Resolves logical route inputs to worker targets for diagnostics/preflight checks
 
 ### Generated Shape and ADR Mapping
 
@@ -228,6 +259,7 @@ This proof validates all binding ADRs with realistic, working SQL:
 | [ADR 0002](docs/adr/0002-sqlproj-as-source-of-truth.md) | SQL project source-of-truth; schema separation | Generated SQL in `database/Generated/`, hand-authored in `database/Schema/`, both included in `.sqlproj`, deployed via DACPAC |
 | [ADR 0004](docs/adr/0004-wrapper-and-worker-procedures.md) | Wrapper + workers with concrete routing | One public wrapper with explicit IF/ELSE branches routes to specialized workers (`name_paged`, `email_unpaged`) |
 | [ADR 0005](docs/adr/0005-deterministic-generated-artifacts.md) | Deterministic artifacts | All output deterministic: stable naming, ordering by LogicalName and WorkerSuffix, committed to git, manifest report |
+| [ADR 0007](docs/adr/0007-runtime-manifest-routing-helper-v1.md) | Runtime helper in v1 | `RuntimeRouteResolver` resolves manifest routes (`Name+Paged -> name_paged`, `Email+Unpaged -> email_unpaged`) |
 
 **Meaningful worker differences:**
 - **name_paged:** Uses `OFFSET/FETCH` paging for efficient paginated name searches

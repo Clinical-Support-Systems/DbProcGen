@@ -11,13 +11,13 @@ Declarative Spec (JSON)
         ↓
    Generation
         ↓
-  Deterministic SQL Artifacts
+Deterministic SQL + Manifest Artifacts
         ↓
-   SQL Project Build (DACPAC)
+SQL Project Build (DACPAC) + Runtime Route Resolver
         ↓
   Review in PR (exact SQL visible)
         ↓
-  Database Deployment
+  Database Deployment + Runtime Diagnostics
 ```
 
 ### 1. Declarative Spec (JSON)
@@ -141,6 +141,17 @@ Generated procedures are deployed like any other schema artifact:
 - DACPAC is deployed to production via standard tools (SQL Server deployment, Azure Data Studio, CI/CD pipeline, etc.)
 - Wrapper procedures are the public API; caller code never directly references worker procedures
 - Worker procedures are implementation details protected by the wrapper contract
+
+### 8. Runtime Helper (v1)
+
+**ADR Reference:** [ADR 0007 - runtime manifest routing helper](adr/0007-runtime-manifest-routing-helper-v1.md)
+
+`DbProcGen.Runtime` provides a v1 helper that loads `database/Generated/generation-manifest.json` and resolves a logical procedure + axis values into a deterministic worker route.
+
+This helper is intentionally advisory:
+- It supports application diagnostics, preflight checks, and test assertions
+- It does not replace SQL wrapper routing in deployment
+- It derives behavior from committed generated artifacts
 
 ## Wrapper and Worker Procedures
 
@@ -390,7 +401,14 @@ This separation—hand-authored schema in `Schema/`, generated procedures in `Ge
    - JSON document listing all generated families
    - Shows which workers were emitted and why (route conditions)
    - Deterministic format for build verification
-   - Enables ops visibility into generated variants
+    - Enables ops visibility into generated variants
+
+4. **Runtime route resolution helper** (`src/DbProcGen.Runtime/RuntimeRouteResolver.cs`):
+   - Loads the generated manifest as the source for runtime route metadata
+   - Resolves route pairs such as:
+     - `FilterTypeAxis=Name`, `PagingAxis=true` → `GetUsersByFilter_name_paged`
+     - `FilterTypeAxis=Email`, `PagingAxis=false` → `GetUsersByFilter_email_unpaged`
+   - Provides deterministic, side-effect free route lookup for .NET diagnostics/test tooling
 
 ### Hand-Authored SQL in the Proof
 
@@ -414,6 +432,7 @@ The example shows:
 | **SQL project source-of-truth** | All generated SQL in `database/Generated/`, included in `.sqlproj`, committed to git | ADR 0002 |
 | **Wrapper + workers** | One wrapper (`GetUsersByFilter`) + two workers with deterministic naming | ADR 0004 |
 | **Deterministic artifacts** | Stable file names, alphabetical ordering, auto-generated headers, stale file cleanup, manifest report | ADR 0005 |
+| **Runtime helper continuity** | Manifest-driven route resolution in `DbProcGen.Runtime` (`RuntimeRouteResolver`) | ADR 0007 |
 
 ### Determinism Properties
 
@@ -428,6 +447,7 @@ Comprehensive test coverage validates the proof:
 
 - **ArtifactGeneratorTests:** Wrapper/worker creation, stale file cleanup, deterministic ordering, manifest validation
 - **GeneratorSnapshotTests:** Snapshot verification of generated SQL content, file order, determinism across runs
+- **RuntimeRouteResolverTests:** Manifest-driven route resolution behavior and failure cases
 
 All tests use TUnit with async assertions.
 

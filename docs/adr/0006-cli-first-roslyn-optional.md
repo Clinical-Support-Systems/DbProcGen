@@ -19,7 +19,7 @@ We want a path that delivers value quickly without overcomplicating the first ve
 
 ## Decision
 
-The first implementation will be **CLI-first**.
+The first implementation is **CLI-first**, with a minimal runtime helper included in v1 for manifest-driven route resolution.
 
 A standalone generator will:
 - read specs
@@ -28,6 +28,7 @@ A standalone generator will:
 - optionally emit manifests and reports
 
 Roslyn analyzers or source generators may be added later to improve developer experience, but they are not required for v1.
+The runtime helper does not depend on Roslyn integration.
 
 ## Rationale
 
@@ -51,7 +52,7 @@ Roslyn is still valuable later for:
 
 ### Negative
 - The first version may have a less polished IDE experience.
-- Typed consumer helpers may arrive later.
+- Rich typed consumer helpers may still arrive later.
 
 ## Alternatives considered
 
