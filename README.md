@@ -1,5 +1,7 @@
 # DbProcGen
 
+[![CI](https://github.com/Clinical-Support-Systems/DbProcGen/actions/workflows/ci.yml/badge.svg)](https://github.com/Clinical-Support-Systems/DbProcGen/actions/workflows/ci.yml)
+
 **Build-time generation of specialized stored procedures from declarative specs while maintaining a stable public SQL API.**
 
 ## Problem Statement
@@ -150,6 +152,30 @@ dotnet test --project tests\DbProcGen.Database.Tests
 # Build SQL project (compiles Schema/ + Generated/ into DACPAC)
 dotnet build database\DbProcGen.Database.sqlproj
 ```
+
+## CI Strategy (ADR-aligned)
+
+GitHub Actions CI (`.github/workflows/ci.yml`) enforces the initial testing and verification strategy with explicit ADR mapping:
+
+- **Parsing/validation unit tests** (`tests/DbProcGen.Spec.Tests`)  
+  - Verifies JSON spec shape and semantic validation behavior.
+  - Tied to **ADR 0001** (build-time generation pipeline) and **ADR 0003** (JSON spec format).
+
+- **Generated artifact snapshot tests** (`GeneratorSnapshotTests`, `EndToEndRealismTests` in `tests/DbProcGen.Tool.Tests`)  
+  - Verifies wrapper/worker SQL and manifest output remain deterministic and reviewable.
+  - Tied to **ADR 0005** (deterministic committed artifacts) and **ADR 0004** (wrapper + worker design).
+
+- **Regeneration guard for tracked generated files**  
+  - Runs `dotnet run --project src/DbProcGen.Tool -- generate` and fails if `database/Generated/` changes.
+  - Tied to **ADR 0005** requirement that CI fails on unexpected generation drift.
+
+- **Placeholder integration tests for SQL deployment and wrapper contract** (`tests/DbProcGen.Database.Tests`)  
+  - Verifies SQL project build succeeds and that generated wrapper/worker contract shape is present.
+  - Tied to **ADR 0002** (SQL project source of truth) and **ADR 0004** (stable wrapper boundary).
+
+- **Slopwatch quality gate**
+  - Runs `slopwatch analyze -d . --fail-on error --output json` in CI.
+  - Uses repository baseline/config under `.slopwatch/` to fail builds on new slop issues.
 
 ## Visual Studio 2026 Usage
 
