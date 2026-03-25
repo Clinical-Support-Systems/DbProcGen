@@ -1,0 +1,14 @@
+{
+  "version": "1.0",
+  "logicalName": "GetUsersByFilter",
+  "schema": "dbo",
+  "publicProcedure": "GetUsersByFilter",
+  "parameters": [],
+  "resultContract": {
+    "note": "TODO: define columns in v1 schema"
+  },
+  "specializationAxes": [],
+  "routingRules": {
+    "note": "UNDECIDED: exact routing expression format"
+  }
+}

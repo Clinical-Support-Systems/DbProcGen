@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DbProcGen.Spec\DbProcGen.Spec.csproj" />
+    <ProjectReference Include="..\DbProcGen.Generator\DbProcGen.Generator.csproj" />
+  </ItemGroup>
+</Project>

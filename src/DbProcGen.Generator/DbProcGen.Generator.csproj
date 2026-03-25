@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\DbProcGen.Model\DbProcGen.Model.csproj" />
+    <ProjectReference Include="..\DbProcGen.Spec\DbProcGen.Spec.csproj" />
+  </ItemGroup>
+</Project>

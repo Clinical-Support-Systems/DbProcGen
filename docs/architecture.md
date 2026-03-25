@@ -22,7 +22,7 @@ Declarative Spec (JSON)
 
 ### 1. Declarative Spec (JSON)
 
-**ADR Reference:** [ADR 0003 - JSON spec format v1](docs/adr/0003-json-spec-format-v1.md)
+**ADR Reference:** [ADR 0003 - JSON spec format v1](adr/0003-json-spec-format-v1.md)
 
 Developers author procedure definitions as JSON files in `specs/<domain>/<logical-name>.dbproc.json`.
 
@@ -59,7 +59,7 @@ Validation fails the build if any spec is invalid, preventing broken SQL from be
 
 ### 3. Generation
 
-**ADR Reference:** [ADR 0001 - Build-time generation](docs/adr/0001-build-time-generation.md)
+**ADR Reference:** [ADR 0001 - Build-time generation](adr/0001-build-time-generation.md)
 
 The generator (`DbProcGen.Generator`) processes validated specs and emits SQL:
 
@@ -72,7 +72,7 @@ All output is deterministic: running generation twice on the same specs produces
 
 ### 4. Deterministic SQL Artifacts
 
-**ADR Reference:** [ADR 0005 - Deterministic generated artifacts](docs/adr/0005-deterministic-generated-artifacts.md)
+**ADR Reference:** [ADR 0005 - Deterministic generated artifacts](adr/0005-deterministic-generated-artifacts.md)
 
 Generated SQL files are written to `database/Generated/` with:
 - Fixed, deterministic names derived from spec names and worker variants
@@ -87,7 +87,7 @@ All generated files are committed to source control. This ensures:
 
 ### 5. SQL Project Build
 
-**ADR Reference:** [ADR 0002 - SQL project as deployment source of truth](docs/adr/0002-sqlproj-as-source-of-truth.md)
+**ADR Reference:** [ADR 0002 - SQL project as deployment source of truth](adr/0002-sqlproj-as-source-of-truth.md)
 
 The SQL project (`database/DbProcGen.Database.sqlproj`) includes:
 - `Schema/` — hand-authored tables, indexes, views
@@ -119,7 +119,7 @@ Generated procedures are deployed like any other schema artifact:
 
 ## Wrapper and Worker Procedures
 
-**ADR Reference:** [ADR 0004 - Wrapper and worker procedures](docs/adr/0004-wrapper-and-worker-procedures.md)
+**ADR Reference:** [ADR 0004 - Wrapper and worker procedures](adr/0004-wrapper-and-worker-procedures.md)
 
 For each logical procedure, the system generates two types:
 
@@ -192,7 +192,7 @@ END
 
 ## CLI-First Implementation
 
-**ADR Reference:** [ADR 0006 - CLI-first, Roslyn optional](docs/adr/0006-cli-first-roslyn-optional.md)
+**ADR Reference:** [ADR 0006 - CLI-first, Roslyn optional](adr/0006-cli-first-roslyn-optional.md)
 
 v1 uses a **standalone CLI generator** (`DbProcGen.Tool`) that is invoked separately:
 
@@ -225,7 +225,7 @@ But these are not required for v1 and do not block delivery of core SQL generati
 
 ## Determinism and Build Reproducibility
 
-**ADR Reference:** [ADR 0005 - Deterministic generated artifacts](docs/adr/0005-deterministic-generated-artifacts.md)
+**ADR Reference:** [ADR 0005 - Deterministic generated artifacts](adr/0005-deterministic-generated-artifacts.md)
 
 The generator **must be deterministic**: running generation twice on the same specs produces byte-for-byte identical output.
 
@@ -276,10 +276,10 @@ dotnet run --project src/DbProcGen.Tool -- generate
 dotnet build DbProcGen.slnx
 
 # 4. Run tests
-dotnet test tests/DbProcGen.Spec.Tests          # Spec parsing/validation
-dotnet test tests/DbProcGen.Generator.Tests     # Generation logic
-dotnet test tests/DbProcGen.Database.Tests      # SQL + stored proc behavior
-dotnet test tests/DbProcGen.Runtime.Tests       # Optional runtime helpers
+dotnet test --project tests/DbProcGen.Spec.Tests          # Spec parsing/validation
+dotnet test --project tests/DbProcGen.Generator.Tests     # Generation logic
+dotnet test --project tests/DbProcGen.Database.Tests      # SQL + stored proc behavior
+dotnet test --project tests/DbProcGen.Runtime.Tests       # Optional runtime helpers
 
 # 5. Build SQL project (generates DACPAC)
 dotnet build database/DbProcGen.Database.sqlproj

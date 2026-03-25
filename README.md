@@ -111,10 +111,10 @@ dotnet build DbProcGen.slnx
 dotnet run --project src/DbProcGen.Tool -- generate
 
 # Run tests
-dotnet test tests/DbProcGen.Spec.Tests
-dotnet test tests/DbProcGen.Generator.Tests
-dotnet test tests/DbProcGen.Runtime.Tests
-dotnet test tests/DbProcGen.Database.Tests
+dotnet test --project tests/DbProcGen.Spec.Tests
+dotnet test --project tests/DbProcGen.Generator.Tests
+dotnet test --project tests/DbProcGen.Runtime.Tests
+dotnet test --project tests/DbProcGen.Database.Tests
 
 # Build SQL project (compiles Schema/ + Generated/ into DACPAC)
 dotnet build database/DbProcGen.Database.sqlproj
