@@ -68,7 +68,7 @@ public sealed record DbProcSpecializationAxisSpec(
 ///     The routing rules that govern dispatch from the wrapper to worker procedures.
 /// </summary>
 /// <param name="Routes">the ordered list of route definitions</param>
-/// <param name="DefaultRoute">the name of the fallback route; if `null`, the first route (by suffix) is used</param>
+/// <param name="DefaultRoute">legacy field parsed for compatibility; v1 validation rejects fallback default routes</param>
 public sealed record DbProcRoutingRulesSpec(
     IReadOnlyList<DbProcRouteSpec> Routes,
     string? DefaultRoute);
@@ -79,10 +79,12 @@ public sealed record DbProcRoutingRulesSpec(
 /// <param name="Name">the route name</param>
 /// <param name="When">the conditions that must all match for this route to activate</param>
 /// <param name="WorkerSuffix">the suffix appended to the public procedure name to form the worker name</param>
+/// <param name="SqlBody">optional explicit SQL body for the generated worker procedure</param>
 public sealed record DbProcRouteSpec(
     string Name,
     IReadOnlyList<DbProcRouteConditionSpec> When,
-    string WorkerSuffix);
+    string WorkerSuffix,
+    string? SqlBody = null);
 
 /// <summary>
 ///     A single condition within a route, matching an axis to a specific value.

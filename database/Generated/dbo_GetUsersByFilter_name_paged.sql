@@ -21,16 +21,16 @@ BEGIN
         WHEN @PageSize IS NULL OR @PageSize < 1 THEN 25
         ELSE @PageSize
     END;
-
+    
     DECLARE @EffectivePageNumber int = CASE
         WHEN @PageNumber IS NULL OR @PageNumber < 1 THEN 1
         ELSE @PageNumber
     END;
-
+    
     DECLARE @Offset int = (@EffectivePageNumber - 1) * @EffectivePageSize;
-
+    
     SET @PageSize = @EffectivePageSize;
-
+    
     SELECT
         CAST(u.[UserId] AS int) AS [UserId],
         CAST(u.[UserName] AS nvarchar(200)) AS [DisplayName]

@@ -39,11 +39,29 @@ public class DatabaseIntegrationPlaceholderTests
         await Assert.That(wrapper).Contains("@FilterValue nvarchar(512)");
         await Assert.That(wrapper).Contains("EXEC [dbo].[GetUsersByFilter_name_paged]");
         await Assert.That(wrapper).Contains("EXEC [dbo].[GetUsersByFilter_email_unpaged]");
+        await Assert.That(wrapper).Contains("THROW 50001, 'No matching route for generated wrapper procedure.', 1;");
 
         await Assert.That(pagedWorker).Contains("AS [UserId]");
         await Assert.That(pagedWorker).Contains("AS [DisplayName]");
         await Assert.That(unpagedWorker).Contains("AS [UserId]");
         await Assert.That(unpagedWorker).Contains("AS [DisplayName]");
+    }
+
+    [Test]
+    public async Task PlaceholderIntegration_WorkerBodies_AreSpecDriven_NotPlaceholder()
+    {
+        var repoRoot = FindRepoRoot();
+        var generatedDir = Path.Combine(repoRoot, "database", "Generated");
+
+        var pagedWorkerPath = Path.Combine(generatedDir, "dbo_GetUsersByFilter_name_paged.sql");
+        var unpagedWorkerPath = Path.Combine(generatedDir, "dbo_GetUsersByFilter_email_unpaged.sql");
+        var pagedWorker = await File.ReadAllTextAsync(pagedWorkerPath);
+        var unpagedWorker = await File.ReadAllTextAsync(unpagedWorkerPath);
+
+        await Assert.That(pagedWorker.Contains("WHERE 1 = 0", StringComparison.Ordinal)).IsFalse();
+        await Assert.That(unpagedWorker.Contains("WHERE 1 = 0", StringComparison.Ordinal)).IsFalse();
+        await Assert.That(pagedWorker).Contains("OFFSET @Offset ROWS");
+        await Assert.That(unpagedWorker).Contains("u.[Email] = @FilterValue");
     }
 
     private static string FindRepoRoot()

@@ -1,5 +1,3 @@
-using DbProcGen.Spec;
-
 namespace DbProcGen.Spec.Tests;
 
 public class SpecDocumentFactoryTests
@@ -37,8 +35,7 @@ public class SpecDocumentFactoryTests
                              { "axis": "PagingAxis", "equals": "true" }
                            ]
                          }
-                       ],
-                       "defaultRoute": "OpenPaged"
+                       ]
                      }
                    }
                    """;
@@ -200,5 +197,84 @@ public class SpecDocumentFactoryTests
             .And.Contains("$.publicProcedure|DBPROC100")
             .And.Contains("$.parameters|DBPROC120")
             .And.Contains("$.version|DBPROC101");
+    }
+
+    [Test]
+    public async Task ParseAndValidate_RouteSqlBody_IsParsedAndValid()
+    {
+        var json = """
+                   {
+                     "version": "1.0",
+                     "logicalName": "GetOrders",
+                     "schema": "sales",
+                     "publicProcedure": "GetOrders",
+                     "parameters": [
+                       { "name": "Status", "sqlType": "nvarchar(20)", "required": true }
+                     ],
+                     "resultContract": {
+                       "columns": [
+                         { "name": "OrderId", "sqlType": "int", "nullable": false }
+                       ]
+                     },
+                     "specializationAxes": [
+                       { "name": "StatusAxis", "parameter": "Status", "values": [ "Open" ] }
+                     ],
+                     "routingRules": {
+                       "routes": [
+                         {
+                           "name": "Open",
+                           "workerSuffix": "open",
+                           "sqlBody": "SELECT CAST(1 AS int) AS [OrderId];",
+                           "when": [ { "axis": "StatusAxis", "equals": "Open" } ]
+                         }
+                       ]
+                     }
+                   }
+                   """;
+
+        var document = SpecDocumentFactory.ParseAndValidate(json);
+
+        await Assert.That(document.IsValid).IsTrue();
+        await Assert.That(document.Spec).IsNotNull();
+        await Assert.That(document.Spec!.RoutingRules.Routes[0].SqlBody).IsEqualTo("SELECT CAST(1 AS int) AS [OrderId];");
+    }
+
+    [Test]
+    public async Task ParseAndValidate_DefaultRoute_IsRejectedInV1()
+    {
+        var json = """
+                   {
+                     "version": "1.0",
+                     "logicalName": "GetOrders",
+                     "schema": "sales",
+                     "publicProcedure": "GetOrders",
+                     "parameters": [
+                       { "name": "Status", "sqlType": "nvarchar(20)", "required": true }
+                     ],
+                     "resultContract": {
+                       "columns": [
+                         { "name": "OrderId", "sqlType": "int", "nullable": false }
+                       ]
+                     },
+                     "specializationAxes": [
+                       { "name": "StatusAxis", "parameter": "Status", "values": [ "Open" ] }
+                     ],
+                     "routingRules": {
+                       "routes": [
+                         {
+                           "name": "Open",
+                           "workerSuffix": "open",
+                           "when": [ { "axis": "StatusAxis", "equals": "Open" } ]
+                         }
+                       ],
+                       "defaultRoute": "Open"
+                     }
+                   }
+                   """;
+
+        var document = SpecDocumentFactory.ParseAndValidate(json);
+
+        await Assert.That(document.IsValid).IsFalse();
+        await Assert.That(document.Diagnostics.Select(static d => d.Code)).Contains("DBPROC159");
     }
 }

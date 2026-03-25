@@ -113,7 +113,7 @@ flowchart TD
     App["Application Code"] -->|"EXEC dbo.GetUsersByFilter"| W["Wrapper Procedure\ndbo.GetUsersByFilter\n(stable public API)"]
     W -->|"FilterType = Name\nIsPaged = 1"| W1["Worker: name_paged\nOptimized for name search\nwith paging"]
     W -->|"FilterType = Email\nIsPaged = 0"| W2["Worker: email_unpaged\nOptimized for email lookup\nwithout paging"]
-    W -->|"default route"| W1
+    W -->|"no route match"| X["THROW 50001"]
 ```
 
 Application code calls a single stable wrapper procedure. The wrapper routes to specialized worker procedures based on parameter values. Workers are optimized for specific query plan shapes — callers never reference them directly.
@@ -234,9 +234,9 @@ These ADRs are binding constraints for v1. For detailed context and rationale, s
 - **[ADR 0006](docs/adr/0006-cli-first-roslyn-optional.md)** — CLI-first; Roslyn integration deferred
 - **[ADR 0007](docs/adr/0007-runtime-manifest-routing-helper-v1.md)** — Runtime manifest-based route resolver (v1)
 
-## Status: End-to-End Proof Complete
+## Status: Architectural proof-of-concept with one concrete family
 
-The repository demonstrates a complete end-to-end generation flow for one procedure family:
+The repository demonstrates a real end-to-end path for one concrete procedure family while keeping broader framework scope intentionally constrained:
 
 **Example: GetUsersByFilter**
 - **Spec:** `specs/users/GetUsersByFilter.dbproc.json`
@@ -253,9 +253,9 @@ The repository demonstrates a complete end-to-end generation flow for one proced
   - Loads `generation-manifest.json`
   - Resolves logical route inputs to worker targets for diagnostics/preflight checks
 
-### Generated Shape and ADR Mapping
+### Implemented now (v1 PoC)
 
-This proof validates all binding ADRs with realistic, working SQL:
+Current implementation demonstrates binding ADR alignment with concrete generated SQL and manifest artifacts:
 
 | ADR | Requirement | Implementation |
 |-----|-------------|----------------|
@@ -306,13 +306,16 @@ This proof validates all binding ADRs with realistic, working SQL:
 
 The manifest provides operational visibility: which worker procedures exist, under what conditions they're invoked, and a deterministic record of generation output for build verification.
 
-## Status: Skeleton
+## What is sample-specific vs framework-complete
 
-This repository currently contains placeholder projects and stub files to establish ADR-constrained structure.
+- **Sample-specific today:** The only concrete family is `GetUsersByFilter` in `specs/users/GetUsersByFilter.dbproc.json`.
+- **Framework-level implemented:** parse/validate pipeline, deterministic wrapper/worker generation, manifest emission, sqlproj integration, runtime manifest resolver.
+- **Framework work still remaining:** richer reusable worker-body authoring model beyond route-level `sqlBody`, broader multi-family coverage, deeper execution-level database test harness.
 
-**Intentionally undecided (marked for future refinement):**
-- Exact spec schema beyond ADR minimums (parameter types, result-set metadata, serialization rules)
-- Wrapper-to-worker routing implementation (SQL branches vs. .NET routing or both)
-- Worker procedure naming serialization and collision avoidance
+## Routing semantics (SQL + runtime) are intentionally aligned
+
+- Generated SQL wrappers now **fail explicitly** on unmatched routes using `THROW` (no silent fallback).
+- `RuntimeRouteResolver` already fails explicitly for unmatched routes.
+- This keeps diagnostics and execution semantics consistent with ADR 0004 + ADR 0007 authority boundaries (SQL executes, runtime advises).
 
 For end-to-end architecture and design principles, see [docs/architecture.md](docs/architecture.md).

@@ -17,13 +17,9 @@ BEGIN
     -- Specialized implementation for this parameter combination
 
     SELECT
-        CAST(u.[UserId] AS int) AS [UserId],
-        CAST(u.[Email] AS nvarchar(200)) AS [DisplayName]
-    FROM [dbo].[Users] AS u
-    WHERE @FilterType = 'Email'
-      AND @FilterValue IS NOT NULL
-      AND u.[Email] = @FilterValue
-    ORDER BY u.[Email], u.[UserId];
+        CAST(NULL AS int) AS [UserId],
+        CAST(NULL AS nvarchar(200)) AS [DisplayName]
+    WHERE 1 = 0;
 END
 GO
 ,
@@ -44,30 +40,10 @@ BEGIN
     -- Conditions: FilterTypeAxis = 'Name' AND PagingAxis = 'true'
     -- Specialized implementation for this parameter combination
 
-    DECLARE @EffectivePageSize int = CASE
-        WHEN @PageSize IS NULL OR @PageSize < 1 THEN 25
-        ELSE @PageSize
-    END;
-
-    DECLARE @EffectivePageNumber int = CASE
-        WHEN @PageNumber IS NULL OR @PageNumber < 1 THEN 1
-        ELSE @PageNumber
-    END;
-
-    DECLARE @Offset int = (@EffectivePageNumber - 1) * @EffectivePageSize;
-
-    SET @PageSize = @EffectivePageSize;
-
     SELECT
-        CAST(u.[UserId] AS int) AS [UserId],
-        CAST(u.[UserName] AS nvarchar(200)) AS [DisplayName]
-    FROM [dbo].[Users] AS u
-    WHERE @FilterType = 'Name'
-      AND @FilterValue IS NOT NULL
-      AND u.[UserName] LIKE @FilterValue + '%'
-    ORDER BY u.[UserName], u.[UserId]
-    OFFSET @Offset ROWS
-    FETCH NEXT @PageSize ROWS ONLY;
+        CAST(NULL AS int) AS [UserId],
+        CAST(NULL AS nvarchar(200)) AS [DisplayName]
+    WHERE 1 = 0;
 END
 GO
 ,
@@ -103,9 +79,7 @@ BEGIN
         RETURN;
     END
 
-    EXEC [dbo].[GetUsersByFilter_email_unpaged]
-        @FilterType = @FilterType,
-        @IsPaged = @IsPaged;
+    THROW 50001, 'No matching route for generated wrapper procedure.', 1;
 END
 GO
 ,

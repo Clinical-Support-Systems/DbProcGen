@@ -278,6 +278,7 @@ public static class SpecParser
 
             var name = RequiredString(routeElement, "name", $"{routePath}.name", diagnostics);
             var workerSuffix = RequiredString(routeElement, "workerSuffix", $"{routePath}.workerSuffix", diagnostics);
+            var sqlBody = OptionalString(routeElement, "sqlBody", $"{routePath}.sqlBody", diagnostics);
 
             var whenPath = $"{routePath}.when";
             var conditions = new List<DbProcRouteConditionSpec>();
@@ -318,7 +319,7 @@ public static class SpecParser
                 continue;
             }
 
-            routes.Add(new DbProcRouteSpec(name, conditions, workerSuffix));
+            routes.Add(new DbProcRouteSpec(name, conditions, workerSuffix, sqlBody));
         }
 
         var defaultRoute = OptionalString(routingElement, "defaultRoute", $"{path}.defaultRoute", diagnostics);

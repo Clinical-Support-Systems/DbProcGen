@@ -26,6 +26,7 @@ public sealed class EndToEndRealismTests
         await Assert.That(wrapper).Contains("ELSE IF @FilterType = 'Email' AND @IsPaged = 0");
         await Assert.That(wrapper).Contains("EXEC [dbo].[GetUsersByFilter_name_paged]");
         await Assert.That(wrapper).Contains("EXEC [dbo].[GetUsersByFilter_email_unpaged]");
+        await Assert.That(wrapper).Contains("THROW 50001, 'No matching route for generated wrapper procedure.', 1;");
 
         // 2) Paged and unpaged workers differ materially.
         await Assert.That(pagedWorker != unpagedWorker).IsTrue();
@@ -58,6 +59,16 @@ public sealed class EndToEndRealismTests
         await Assert.That(manifestDoc.RootElement.GetProperty("generatedAt").GetString()).IsEqualTo("generation-manifest");
         await Assert.That(family.GetProperty("wrapperFile").GetString()).IsEqualTo("dbo_GetUsersByFilter.sql");
         await Assert.That(string.Join(",", workerSuffixes!)).IsEqualTo("email_unpaged,name_paged");
+
+        // 5) Manifest/runtime semantics remain aligned on explicit unmatched-route failure.
+        var resolver = DbProcGen.Runtime.RuntimeRouteResolver.LoadFromManifestFile(manifestPath);
+        await Assert.That(async () =>
+                _ = resolver.Resolve("GetUsersByFilter", new Dictionary<string, string>
+                {
+                    ["FilterTypeAxis"] = "Email",
+                    ["PagingAxis"] = "true"
+                }))
+            .Throws<InvalidOperationException>();
 
         await Verify(new SortedDictionary<string, string>(StringComparer.Ordinal)
             {

@@ -9,5 +9,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\DbProcGen.Tool\DbProcGen.Tool.csproj" />
+    <ProjectReference Include="..\..\src\DbProcGen.Runtime\DbProcGen.Runtime.csproj" />
   </ItemGroup>
 </Project>

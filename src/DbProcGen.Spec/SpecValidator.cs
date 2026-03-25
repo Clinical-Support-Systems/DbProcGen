@@ -211,6 +211,15 @@ public static partial class SpecValidator
                     "Route must include at least one condition."));
             }
 
+            if (route.SqlBody is not null && string.IsNullOrWhiteSpace(route.SqlBody))
+            {
+                diagnostics.Add(new SpecDiagnostic(
+                    "DBPROC158",
+                    $"{routePath}.sqlBody",
+                    SpecDiagnosticSeverity.Error,
+                    "Route sqlBody must not be empty when provided."));
+            }
+
             var routeAxisNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             for (var conditionIndex = 0; conditionIndex < route.When.Count; conditionIndex++)
             {
@@ -255,6 +264,15 @@ public static partial class SpecValidator
                 "$.routingRules.defaultRoute",
                 SpecDiagnosticSeverity.Error,
                 $"Default route '{routingRules.DefaultRoute}' must match a declared route name."));
+        }
+
+        if (routingRules.DefaultRoute is not null)
+        {
+            diagnostics.Add(new SpecDiagnostic(
+                "DBPROC159",
+                "$.routingRules.defaultRoute",
+                SpecDiagnosticSeverity.Error,
+                "Default route fallback is not supported in v1; wrappers fail explicitly when no route matches."));
         }
     }
 

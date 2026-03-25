@@ -1,7 +1,6 @@
 using System.Text.Json;
 using DbProcGen.Generator;
 using DbProcGen.Model;
-using DbProcGen.Runtime;
 
 namespace DbProcGen.Runtime.Tests;
 
@@ -111,11 +110,11 @@ public class RuntimeRouteResolverTests
                 new DbProcRouteSpec("NamePaged", [
                     new DbProcRouteConditionSpec("FilterTypeAxis", "Name"),
                     new DbProcRouteConditionSpec("PagingAxis", "true")
-                ], "name_paged"),
+                ], "name_paged", "SELECT 1 AS [UserId], N'Name' AS [DisplayName];"),
                 new DbProcRouteSpec("EmailUnpaged", [
                     new DbProcRouteConditionSpec("FilterTypeAxis", "Email"),
                     new DbProcRouteConditionSpec("PagingAxis", "false")
-                ], "email_unpaged")
+                ], "email_unpaged", "SELECT 2 AS [UserId], N'Email' AS [DisplayName];")
             ], "NamePaged"),
             []);
     }

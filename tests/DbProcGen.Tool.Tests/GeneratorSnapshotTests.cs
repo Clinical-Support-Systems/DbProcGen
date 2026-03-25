@@ -316,7 +316,7 @@ public sealed class GeneratorSnapshotTests
             ]),
             [],
             new DbProcRoutingRulesSpec([
-                new DbProcRouteSpec("Default", [], workerSuffix)
+                new DbProcRouteSpec("Default", [new DbProcRouteConditionSpec("Axis", "v")], workerSuffix)
             ], null),
             []);
     }

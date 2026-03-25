@@ -61,6 +61,7 @@
       {
         "name": "NamePaged",
         "workerSuffix": "name_paged",
+        "sqlBody": "DECLARE @EffectivePageSize int = CASE\n    WHEN @PageSize IS NULL OR @PageSize < 1 THEN 25\n    ELSE @PageSize\nEND;\n\nDECLARE @EffectivePageNumber int = CASE\n    WHEN @PageNumber IS NULL OR @PageNumber < 1 THEN 1\n    ELSE @PageNumber\nEND;\n\nDECLARE @Offset int = (@EffectivePageNumber - 1) * @EffectivePageSize;\n\nSET @PageSize = @EffectivePageSize;\n\nSELECT\n    CAST(u.[UserId] AS int) AS [UserId],\n    CAST(u.[UserName] AS nvarchar(200)) AS [DisplayName]\nFROM [dbo].[Users] AS u\nWHERE @FilterType = 'Name'\n  AND @FilterValue IS NOT NULL\n  AND u.[UserName] LIKE @FilterValue + '%'\nORDER BY u.[UserName], u.[UserId]\nOFFSET @Offset ROWS\nFETCH NEXT @PageSize ROWS ONLY;",
         "when": [
           { "axis": "FilterTypeAxis", "equals": "Name" },
           { "axis": "PagingAxis", "equals": "true" }
@@ -69,13 +70,13 @@
       {
         "name": "EmailUnpaged",
         "workerSuffix": "email_unpaged",
+        "sqlBody": "SELECT\n    CAST(u.[UserId] AS int) AS [UserId],\n    CAST(u.[Email] AS nvarchar(200)) AS [DisplayName]\nFROM [dbo].[Users] AS u\nWHERE @FilterType = 'Email'\n  AND @FilterValue IS NOT NULL\n  AND u.[Email] = @FilterValue\nORDER BY u.[Email], u.[UserId];",
         "when": [
           { "axis": "FilterTypeAxis", "equals": "Email" },
           { "axis": "PagingAxis", "equals": "false" }
         ]
       }
-    ],
-    "defaultRoute": "NamePaged"
+    ]
   },
   "fragments": [
     {

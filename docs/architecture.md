@@ -1,6 +1,6 @@
 # DbProcGen Architecture
 
-This document describes the end-to-end design of DbProcGen, including the flow from specs to deployment, the wrapper/worker pattern, and the rationale for key technical choices.
+This document describes the current end-to-end architecture of DbProcGen as an architectural proof-of-concept with one concrete family (`GetUsersByFilter`), plus the framework surfaces that are already reusable.
 
 ## End-to-End Flow
 
@@ -34,6 +34,7 @@ Each spec declares:
 - Result contract (columns, types)
 - Specialization axes (if any) — e.g., "paging vs. non-paging"
 - Routing rules — e.g., "if paging, call worker_paging; else call worker_simple"
+- Optional route-level `sqlBody` for explicit v1 worker body text
 - Optional reusable fragments
 
 JSON was chosen for v1 because it is:
@@ -50,10 +51,10 @@ YAML is deferred to v2 for ergonomics once the schema stabilizes.
 The CLI tool (`DbProcGen.Tool`) reads all specs and validates them:
 - JSON structure is well-formed
 - Mandatory fields are present
-- Parameter and result types are valid
-- Specialization axes are coherent
-- Worker names will not collide
-- No circular routing rules
+- Identifier and uniqueness rules are enforced for core fields
+- Specialization axes and route conditions reference declared members
+- Route-level `sqlBody` (when provided) must be non-empty
+- `routingRules.defaultRoute` is rejected in v1 (explicit unmatched failure model)
 
 Validation fails the build if any spec is invalid, preventing broken SQL from being generated.
 
@@ -282,17 +283,15 @@ Requirements for determinism:
 
 A CI check should verify that committed generated artifacts match the current spec + generator state. If not, the build fails and the developer must regenerate.
 
-## Undecided Details (v1 Scope)
+## Current framework boundaries (v1)
 
-The following are intentionally deferred to allow focused v1 delivery:
+The following boundaries keep v1 small and ADR-aligned:
 
 - **Exact spec schema:** ADRs define minimums (procedure name, parameters, result type, specialization axes). Specifics like parameter length, result-set column ordering, and nullable defaults are open for refinement as specs are authored.
 
-- **Wrapper-to-worker routing mechanism:** ADRs require routing to work but leave implementation open:
-  - SQL IF/ELSE branches in the wrapper
-  - .NET-side routing with direct worker calls
-  - A hybrid approach
-  - This will be finalized as the first real spec is implemented.
+- **Routing authority is already decided:** wrappers route in generated SQL, runtime resolver is advisory only (ADR 0004 + ADR 0007).
+- **Unmatched routes fail explicitly:** wrappers `THROW` and runtime resolver throws.
+- **Worker-body authoring is intentionally minimal in v1:** route-level `sqlBody` is supported; a richer compositional authoring model is future work.
 
 - **Worker naming collision avoidance:** ADRs require worker names to be deterministic. The exact serialization of specialization axes (e.g., `Worker_Paging_SortByName` vs. `Worker_Paging` vs. a hash of axes) is open for decision once specialization axes are concrete.
 
@@ -383,7 +382,7 @@ This separation—hand-authored schema in `Schema/`, generated procedures in `Ge
    - **Concrete wrapper routing:** Uses `IF/ELSE` branching to dispatch based on FilterType and IsPaged
    - Routes `Name + Paging=1` to `_name_paged` worker
    - Routes `Email + Paging=0` to `_email_unpaged` worker
-   - Default route handles edge cases
+   - Explicit unmatched-route failure (`THROW`) when no route condition matches
 
 2. **Worker procedures** (specialized implementations):
    - **`dbo_GetUsersByFilter_name_paged.sql`** (NamePaged route):
@@ -460,5 +459,6 @@ All tests use TUnit with async assertions.
 - [ADR 0004](adr/0004-wrapper-and-worker-procedures.md) — Wrapper/worker pattern
 - [ADR 0005](adr/0005-deterministic-generated-artifacts.md) — Deterministic artifacts
 - [ADR 0006](adr/0006-cli-first-roslyn-optional.md) — CLI-first approach
+- [ADR 0007](adr/0007-runtime-manifest-routing-helper-v1.md) — Runtime helper scope and explicit failure semantics
 - [specs/README.md](../specs/README.md) — How to write specs
 

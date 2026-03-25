@@ -38,11 +38,6 @@ BEGIN
         RETURN;
     END
 
-    EXEC [dbo].[GetUsersByFilter_name_paged]
-        @FilterType = @FilterType,
-        @IsPaged = @IsPaged,
-        @FilterValue = @FilterValue,
-        @PageSize = @PageSize,
-        @PageNumber = @PageNumber;
+    THROW 50001, 'No matching route for generated wrapper procedure.', 1;
 END
 GO
