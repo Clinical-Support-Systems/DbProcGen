@@ -1,0 +1,10 @@
+﻿[
+  dbo_AlphaProc.sql,
+  dbo_AlphaProc_alpha_worker.sql,
+  dbo_BravoProc.sql,
+  dbo_BravoProc_bravo_worker.sql,
+  dbo_CharlieProc.sql,
+  dbo_CharlieProc_charlie_worker.sql,
+  dbo_ZebraProc.sql,
+  dbo_ZebraProc_zebra_worker.sql
+]
