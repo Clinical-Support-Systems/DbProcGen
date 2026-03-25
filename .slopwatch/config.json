@@ -1,0 +1,10 @@
+{
+  "suppressions": [
+    {
+      "ruleId": "SW003",
+      "pattern": "**/DbProcGen.Tool.Tests/GeneratorSnapshotTests.cs",
+      "justification": "Best-effort temp directory cleanup - failure is harmless and expected under file locks"
+    }
+  ],
+  "globalSuppressions": []
+}
