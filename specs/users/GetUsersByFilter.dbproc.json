@@ -3,12 +3,70 @@
   "logicalName": "GetUsersByFilter",
   "schema": "dbo",
   "publicProcedure": "GetUsersByFilter",
-  "parameters": [],
+  "parameters": [
+    {
+      "name": "FilterType",
+      "sqlType": "nvarchar(32)",
+      "required": true
+    },
+    {
+      "name": "IsPaged",
+      "sqlType": "bit",
+      "required": true
+    }
+  ],
   "resultContract": {
-    "note": "TODO: define columns in v1 schema"
+    "columns": [
+      {
+        "name": "UserId",
+        "sqlType": "int",
+        "nullable": false
+      },
+      {
+        "name": "DisplayName",
+        "sqlType": "nvarchar(200)",
+        "nullable": false
+      }
+    ]
   },
-  "specializationAxes": [],
+  "specializationAxes": [
+    {
+      "name": "FilterTypeAxis",
+      "parameter": "FilterType",
+      "values": [ "Name", "Email" ]
+    },
+    {
+      "name": "PagingAxis",
+      "parameter": "IsPaged",
+      "values": [ "true", "false" ]
+    }
+  ],
   "routingRules": {
-    "note": "UNDECIDED: exact routing expression format"
-  }
+    "routes": [
+      {
+        "name": "NamePaged",
+        "workerSuffix": "name_paged",
+        "when": [
+          { "axis": "FilterTypeAxis", "equals": "Name" },
+          { "axis": "PagingAxis", "equals": "true" }
+        ]
+      },
+      {
+        "name": "EmailUnpaged",
+        "workerSuffix": "email_unpaged",
+        "when": [
+          { "axis": "FilterTypeAxis", "equals": "Email" },
+          { "axis": "PagingAxis", "equals": "false" }
+        ]
+      }
+    ],
+    "defaultRoute": "NamePaged"
+  },
+  "fragments": [
+    {
+      "name": "BaseFilterPredicate",
+      "kind": "predicate",
+      "content": "UNDECIDED: expression grammar intentionally constrained in v1."
+    }
+  ]
 }

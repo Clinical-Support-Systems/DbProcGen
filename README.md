@@ -64,30 +64,51 @@ docs/
 
 ## Workflow: Spec → Generated SQL → Deployment
 
+```mermaid
+flowchart LR
+    A["JSON Spec\n.dbproc.json"] -->|parse| B["Validate\nParse + Semantic\nChecks"]
+    B -->|valid| C["Generate\nWrapper + Worker\nSQL Files"]
+    C --> D["database/Generated/\nDeterministic SQL"]
+    D --> E["Build\n.sqlproj → DACPAC"]
+    E --> F["Review\nPR with Exact SQL"]
+    F --> G["Deploy\nSQL Server /\nAzure SQL"]
 ```
-1. Author spec
-   └─ specs/domain/procedure.dbproc.json
 
-2. Run generate
-   └─ dotnet run --project src/DbProcGen.Tool -- generate
-   └─ Reads all specs, validates, emits SQL files
+1. **Author spec** — Write a `.dbproc.json` in `specs/`
+2. **Generate** — `dotnet run --project src/DbProcGen.Tool -- generate` reads, validates, and emits SQL
+3. **Generated SQL** — Deterministic files appear in `database/Generated/`
+4. **Build** — `dotnet build database/DbProcGen.Database.sqlproj` compiles into a DACPAC
+5. **Review** — PR shows exact SQL changes for code review
+6. **Deploy** — Standard DACPAC deployment to SQL Server / Azure SQL
 
-3. Generated SQL appears in repo
-   └─ database/Generated/domain_procedure_wrapper.sql
-   └─ database/Generated/domain_procedure_worker_variant1.sql (if specialization needed)
-   └─ etc.
+## Wrapper and Worker Pattern
 
-4. Build SQL project
-   └─ dotnet build database/DbProcGen.Database.sqlproj
-   └─ Includes Schema/ + Generated/ in the compiled DACPAC
-
-5. Review & commit
-   └─ Code review captures exact SQL changes
-   └─ Committed artifacts are deterministic, reproducible
-
-6. Deploy
-   └─ Standard DACPAC deployment to SQL Server / Azure SQL
+```mermaid
+flowchart TD
+    App["Application Code"] -->|"EXEC dbo.GetUsersByFilter"| W["Wrapper Procedure\ndbo.GetUsersByFilter\n(stable public API)"]
+    W -->|"FilterType = Name\nIsPaged = 1"| W1["Worker: name_paged\nOptimized for name search\nwith paging"]
+    W -->|"FilterType = Email\nIsPaged = 0"| W2["Worker: email_unpaged\nOptimized for email lookup\nwithout paging"]
+    W -->|"default route"| W1
 ```
+
+Application code calls a single stable wrapper procedure. The wrapper routes to specialized worker procedures based on parameter values. Workers are optimized for specific query plan shapes — callers never reference them directly.
+
+## Spec Processing
+
+```mermaid
+flowchart TD
+    JSON["JSON Input\n.dbproc.json"] --> SP["SpecParser.Parse()"]
+    SP -->|"DBPROC001-005\nShape diagnostics"| PR["SpecParseResult"]
+    PR -->|"Spec is null?\nStop"| FAIL["Return errors only"]
+    PR -->|"Spec parsed OK"| SV["SpecValidator.Validate()"]
+    SV -->|"DBPROC100-161\nSemantic diagnostics"| MERGE["Merge + Sort\nDeterministic ordering"]
+    PR -->|"Parse diagnostics"| MERGE
+    MERGE --> SD["SpecDocument"]
+    SD -->|"IsValid = true"| GEN["Ready for\nGeneration"]
+    SD -->|"IsValid = false"| DIAG["Report\nDiagnostics"]
+```
+
+`SpecDocumentFactory.ParseAndValidate()` runs the JSON through two stages: `SpecParser` checks structural shape (DBPROC001–005), then `SpecValidator` checks semantic rules (DBPROC100–161). Diagnostics from both stages are merged in deterministic order.
 
 ## SQL File Organization
 
@@ -107,16 +128,36 @@ dotnet restore
 # Build .NET projects
 dotnet build DbProcGen.slnx
 
-# Generate SQL from specs (placeholder; implementation TBD)
-dotnet run --project src/DbProcGen.Tool -- generate
+# Validate specs (check JSON schema and semantic rules)
+dotnet run --project src\DbProcGen.Tool -- validate
+
+# Generate SQL from specs
+dotnet run --project src\DbProcGen.Tool -- generate
+
+# Check environment and prerequisites
+dotnet run --project src\DbProcGen.Tool -- doctor
+
+# Show differences between specs and generated artifacts (placeholder)
+dotnet run --project src\DbProcGen.Tool -- diff
 
 # Run tests
-dotnet test --project tests/DbProcGen.Spec.Tests
-dotnet test --project tests/DbProcGen.Generator.Tests
-dotnet test --project tests/DbProcGen.Runtime.Tests
-dotnet test --project tests/DbProcGen.Database.Tests
+dotnet test --project tests\DbProcGen.Spec.Tests
+dotnet test --project tests\DbProcGen.Tool.Tests
+dotnet test --project tests\DbProcGen.Generator.Tests
+dotnet test --project tests\DbProcGen.Runtime.Tests
+dotnet test --project tests\DbProcGen.Database.Tests
 
 # Build SQL project (compiles Schema/ + Generated/ into DACPAC)
+dotnet build database\DbProcGen.Database.sqlproj
+```
+
+## Visual Studio 2026 Usage
+
+- For daily coding in Visual Studio 2026, open `DbProcGen.Dev.slnx` (excludes the SQL project to avoid sqlproj load stalls).
+- Keep CLI/full-path builds on `DbProcGen.slnx` as-is.
+- Build the SQL project separately when needed:
+
+```bash
 dotnet build database/DbProcGen.Database.sqlproj
 ```
 
