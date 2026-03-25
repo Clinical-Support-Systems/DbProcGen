@@ -1,14 +1,21 @@
-using DbProcGen.Tool.Commands;
 using DbProcGen.Generator;
+using DbProcGen.Tool.Commands;
 using DbProcGen.Tool.Services;
 
 namespace DbProcGen.Tool;
 
+/// <summary>
+///     Routes CLI arguments to the appropriate <see cref="ICommand" /> implementation.
+/// </summary>
 public sealed class CommandDispatcher
 {
     private readonly Dictionary<string, ICommand> _commands;
     private readonly IConsoleWriter _console;
 
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="CommandDispatcher" /> class, registering all available commands.
+    /// </summary>
+    /// <param name="console">the console writer for output</param>
     public CommandDispatcher(IConsoleWriter console)
     {
         _console = console ?? throw new ArgumentNullException(nameof(console));
@@ -25,9 +32,15 @@ public sealed class CommandDispatcher
         };
     }
 
+    /// <summary>
+    ///     Dispatches the given CLI arguments to the matching command, or shows help.
+    /// </summary>
+    /// <param name="args">the full command-line arguments</param>
+    /// <returns>`0` on success; a non-zero exit code on failure or unknown command.</returns>
     public int Dispatch(string[] args)
     {
-        if (args.Length == 0 || string.Equals(args[0], "help", StringComparison.OrdinalIgnoreCase) || args[0] == "--help" || args[0] == "-h")
+        if (args.Length == 0 || string.Equals(args[0], "help", StringComparison.OrdinalIgnoreCase) ||
+            args[0] == "--help" || args[0] == "-h")
         {
             ShowHelp();
             return 0;

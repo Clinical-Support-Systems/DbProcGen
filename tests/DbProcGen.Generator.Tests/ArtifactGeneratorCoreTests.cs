@@ -46,10 +46,10 @@ public class ArtifactGeneratorCoreTests
             var result1 = generator.Generate([spec], outputDir1);
             var result2 = generator.Generate([spec], outputDir2);
 
-            var wrapper1 = File.ReadAllText(result1.GeneratedFiles.First(f => f.EndsWith("dbo_DeterministicProc.sql", StringComparison.Ordinal)));
-            var wrapper2 = File.ReadAllText(result2.GeneratedFiles.First(f => f.EndsWith("dbo_DeterministicProc.sql", StringComparison.Ordinal)));
-            var manifest1 = File.ReadAllText(result1.ManifestFile!);
-            var manifest2 = File.ReadAllText(result2.ManifestFile!);
+            var wrapper1 = await File.ReadAllTextAsync(result1.GeneratedFiles.First(f => f.EndsWith("dbo_DeterministicProc.sql", StringComparison.Ordinal)));
+            var wrapper2 = await File.ReadAllTextAsync(result2.GeneratedFiles.First(f => f.EndsWith("dbo_DeterministicProc.sql", StringComparison.Ordinal)));
+            var manifest1 = await File.ReadAllTextAsync(result1.ManifestFile!);
+            var manifest2 = await File.ReadAllTextAsync(result2.ManifestFile!);
 
             await Assert.That(wrapper1).IsEqualTo(wrapper2);
             await Assert.That(manifest1).IsEqualTo(manifest2);

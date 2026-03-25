@@ -3,8 +3,27 @@ using DbProcGen.Model;
 
 namespace DbProcGen.Spec;
 
+/// <summary>
+///     Parses raw JSON into a <see cref="DbProcSpec" /> model, producing diagnostics for structural errors.
+/// </summary>
+/// <remarks>
+///     Diagnostic codes emitted by the parser:
+///     | Code      | Meaning                     |
+///     |-----------|-----------------------------|
+///     | DBPROC001 | Invalid JSON syntax          |
+///     | DBPROC002 | Root is not a JSON object    |
+///     | DBPROC003 | Required property missing    |
+///     | DBPROC004 | Value is empty or whitespace |
+///     | DBPROC005 | Unexpected JSON type         |
+/// </remarks>
 public static class SpecParser
 {
+    /// <summary>
+    ///     Parses the raw JSON spec string into a <see cref="SpecParseResult" />.
+    /// </summary>
+    /// <param name="json">the raw JSON content to parse</param>
+    /// <returns>A <see cref="SpecParseResult" /> containing the parsed spec and any parse diagnostics.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="json" /> is `null`.</exception>
     public static SpecParseResult Parse(string json)
     {
         ArgumentNullException.ThrowIfNull(json);
@@ -27,7 +46,8 @@ public static class SpecParser
                 SpecDiagnosticSeverity.Error,
                 $"Invalid JSON: {ex.Message}"));
 
-            return new SpecParseResult(null, diagnostics.OrderBy(static d => d, SpecDiagnostic.DeterministicComparer).ToArray());
+            return new SpecParseResult(null,
+                diagnostics.OrderBy(static d => d, SpecDiagnostic.DeterministicComparer).ToArray());
         }
 
         using (document)
@@ -40,7 +60,8 @@ public static class SpecParser
                     SpecDiagnosticSeverity.Error,
                     "Spec root must be a JSON object."));
 
-                return new SpecParseResult(null, diagnostics.OrderBy(static d => d, SpecDiagnostic.DeterministicComparer).ToArray());
+                return new SpecParseResult(null,
+                    diagnostics.OrderBy(static d => d, SpecDiagnostic.DeterministicComparer).ToArray());
             }
 
             var root = document.RootElement;
@@ -58,7 +79,8 @@ public static class SpecParser
 
             if (diagnostics.Any(static d => d.Severity == SpecDiagnosticSeverity.Error))
             {
-                return new SpecParseResult(null, diagnostics.OrderBy(static d => d, SpecDiagnostic.DeterministicComparer).ToArray());
+                return new SpecParseResult(null,
+                    diagnostics.OrderBy(static d => d, SpecDiagnostic.DeterministicComparer).ToArray());
             }
 
             var spec = new DbProcSpec(
@@ -72,11 +94,13 @@ public static class SpecParser
                 routingRules!,
                 fragments);
 
-            return new SpecParseResult(spec, diagnostics.OrderBy(static d => d, SpecDiagnostic.DeterministicComparer).ToArray());
+            return new SpecParseResult(spec,
+                diagnostics.OrderBy(static d => d, SpecDiagnostic.DeterministicComparer).ToArray());
         }
     }
 
-    private static IReadOnlyList<DbProcParameterSpec> ParseParameters(JsonElement root, List<SpecDiagnostic> diagnostics)
+    private static IReadOnlyList<DbProcParameterSpec> ParseParameters(JsonElement root,
+        List<SpecDiagnostic> diagnostics)
     {
         var path = "$.parameters";
         if (!root.TryGetProperty("parameters", out var parametersElement))
@@ -171,7 +195,8 @@ public static class SpecParser
         return new DbProcResultContractSpec(columns);
     }
 
-    private static IReadOnlyList<DbProcSpecializationAxisSpec> ParseSpecializationAxes(JsonElement root, List<SpecDiagnostic> diagnostics)
+    private static IReadOnlyList<DbProcSpecializationAxisSpec> ParseSpecializationAxes(JsonElement root,
+        List<SpecDiagnostic> diagnostics)
     {
         var path = "$.specializationAxes";
         if (!root.TryGetProperty("specializationAxes", out var axesElement))
@@ -340,7 +365,8 @@ public static class SpecParser
         return result;
     }
 
-    private static string? RequiredString(JsonElement parent, string propertyName, string path, List<SpecDiagnostic> diagnostics)
+    private static string? RequiredString(JsonElement parent, string propertyName, string path,
+        List<SpecDiagnostic> diagnostics)
     {
         if (!parent.TryGetProperty(propertyName, out var element))
         {
@@ -357,14 +383,16 @@ public static class SpecParser
         var value = element.GetString();
         if (string.IsNullOrWhiteSpace(value))
         {
-            diagnostics.Add(new SpecDiagnostic("DBPROC004", path, SpecDiagnosticSeverity.Error, "Value must not be empty."));
+            diagnostics.Add(new SpecDiagnostic("DBPROC004", path, SpecDiagnosticSeverity.Error,
+                "Value must not be empty."));
             return null;
         }
 
         return value;
     }
 
-    private static string[]? RequiredStringArray(JsonElement parent, string propertyName, string path, List<SpecDiagnostic> diagnostics)
+    private static string[]? RequiredStringArray(JsonElement parent, string propertyName, string path,
+        List<SpecDiagnostic> diagnostics)
     {
         if (!parent.TryGetProperty(propertyName, out var element))
         {
@@ -392,7 +420,8 @@ public static class SpecParser
             var value = item.GetString();
             if (string.IsNullOrWhiteSpace(value))
             {
-                diagnostics.Add(new SpecDiagnostic("DBPROC004", itemPath, SpecDiagnosticSeverity.Error, "Value must not be empty."));
+                diagnostics.Add(new SpecDiagnostic("DBPROC004", itemPath, SpecDiagnosticSeverity.Error,
+                    "Value must not be empty."));
                 continue;
             }
 
@@ -402,7 +431,8 @@ public static class SpecParser
         return values.ToArray();
     }
 
-    private static bool? OptionalBool(JsonElement parent, string propertyName, string path, List<SpecDiagnostic> diagnostics)
+    private static bool? OptionalBool(JsonElement parent, string propertyName, string path,
+        List<SpecDiagnostic> diagnostics)
     {
         if (!parent.TryGetProperty(propertyName, out var element))
         {
@@ -418,7 +448,8 @@ public static class SpecParser
         return element.GetBoolean();
     }
 
-    private static string? OptionalString(JsonElement parent, string propertyName, string path, List<SpecDiagnostic> diagnostics)
+    private static string? OptionalString(JsonElement parent, string propertyName, string path,
+        List<SpecDiagnostic> diagnostics)
     {
         if (!parent.TryGetProperty(propertyName, out var element))
         {
@@ -434,16 +465,22 @@ public static class SpecParser
         var value = element.GetString();
         if (string.IsNullOrWhiteSpace(value))
         {
-            diagnostics.Add(new SpecDiagnostic("DBPROC004", path, SpecDiagnosticSeverity.Error, "Value must not be empty."));
+            diagnostics.Add(new SpecDiagnostic("DBPROC004", path, SpecDiagnosticSeverity.Error,
+                "Value must not be empty."));
             return null;
         }
 
         return value;
     }
 
-    private static SpecDiagnostic MissingRequired(string path) =>
-        new("DBPROC003", path, SpecDiagnosticSeverity.Error, "Required property is missing.");
+    private static SpecDiagnostic MissingRequired(string path)
+    {
+        return new SpecDiagnostic("DBPROC003", path, SpecDiagnosticSeverity.Error, "Required property is missing.");
+    }
 
-    private static SpecDiagnostic InvalidType(string path, string expectedType) =>
-        new("DBPROC005", path, SpecDiagnosticSeverity.Error, $"Invalid JSON type. Expected {expectedType}.");
+    private static SpecDiagnostic InvalidType(string path, string expectedType)
+    {
+        return new SpecDiagnostic("DBPROC005", path, SpecDiagnosticSeverity.Error,
+            $"Invalid JSON type. Expected {expectedType}.");
+    }
 }

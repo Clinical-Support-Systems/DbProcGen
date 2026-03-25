@@ -2,8 +2,13 @@ using DbProcGen.Spec;
 
 namespace DbProcGen.Tool.Services;
 
+/// <summary>
+///     Default <see cref="ISpecLoader" /> implementation that reads spec files from disk
+///     and delegates to <see cref="SpecDocumentFactory.ParseAndValidate" />.
+/// </summary>
 public sealed class SpecLoader : ISpecLoader
 {
+    /// <inheritdoc />
     public SpecDocument LoadSpec(string filePath)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(filePath);

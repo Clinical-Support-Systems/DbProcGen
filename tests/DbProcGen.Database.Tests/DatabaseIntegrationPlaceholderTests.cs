@@ -29,9 +29,9 @@ public class DatabaseIntegrationPlaceholderTests
         var pagedWorkerPath = Path.Combine(generatedDir, "dbo_GetUsersByFilter_name_paged.sql");
         var unpagedWorkerPath = Path.Combine(generatedDir, "dbo_GetUsersByFilter_email_unpaged.sql");
 
-        var wrapper = File.ReadAllText(wrapperPath);
-        var pagedWorker = File.ReadAllText(pagedWorkerPath);
-        var unpagedWorker = File.ReadAllText(unpagedWorkerPath);
+        var wrapper = await File.ReadAllTextAsync(wrapperPath);
+        var pagedWorker = await File.ReadAllTextAsync(pagedWorkerPath);
+        var unpagedWorker = await File.ReadAllTextAsync(unpagedWorkerPath);
 
         await Assert.That(wrapper).Contains("CREATE PROCEDURE [dbo].[GetUsersByFilter]");
         await Assert.That(wrapper).Contains("@FilterType nvarchar(32)");

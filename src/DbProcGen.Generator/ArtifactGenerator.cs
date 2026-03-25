@@ -4,8 +4,13 @@ using DbProcGen.Model;
 
 namespace DbProcGen.Generator;
 
+/// <summary>
+///     Default implementation of <see cref="IArtifactGenerator" /> that emits wrapper + worker SQL
+///     stored procedures and a deterministic generation manifest.
+/// </summary>
 public sealed class ArtifactGenerator : IArtifactGenerator
 {
+    /// <inheritdoc />
     public GenerationResult Generate(DbProcSpec[] specs, string outputDirectory)
     {
         ArgumentNullException.ThrowIfNull(specs);
@@ -16,7 +21,8 @@ public sealed class ArtifactGenerator : IArtifactGenerator
         var generatedFiles = new List<string>();
         var manifestFamilies = new List<ProcedureFamilyManifest>();
         var existingFiles = Directory.Exists(outputDirectory)
-            ? Directory.GetFiles(outputDirectory, "*.sql", SearchOption.AllDirectories).ToHashSet(StringComparer.OrdinalIgnoreCase)
+            ? Directory.GetFiles(outputDirectory, "*.sql", SearchOption.AllDirectories)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase)
             : new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var spec in specs.OrderBy(s => s.LogicalName, StringComparer.Ordinal))
@@ -152,12 +158,16 @@ GO
         return filePath;
     }
 
-    private static string BuildProcedureParameters(DbProcSpec spec) =>
-        string.Join(",\n    ", spec.Parameters.Select(p =>
+    private static string BuildProcedureParameters(DbProcSpec spec)
+    {
+        return string.Join(",\n    ", spec.Parameters.Select(p =>
             $"@{p.Name} {p.SqlType}{(p.Required ? "" : " = NULL")}"));
+    }
 
-    private static string BuildForwardedParameters(DbProcSpec spec) =>
-        string.Join(",\n        ", spec.Parameters.Select(p => $"@{p.Name} = @{p.Name}"));
+    private static string BuildForwardedParameters(DbProcSpec spec)
+    {
+        return string.Join(",\n        ", spec.Parameters.Select(p => $"@{p.Name} = @{p.Name}"));
+    }
 
     private static string BuildRouteBranches(DbProcSpec spec)
     {

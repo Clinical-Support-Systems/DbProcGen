@@ -2,10 +2,18 @@ using System.Text.Json;
 
 namespace DbProcGen.Runtime;
 
+/// <summary>
+///     Resolves axis values to the correct worker procedure using a deserialized generation manifest.
+/// </summary>
 public sealed class RuntimeRouteResolver
 {
     private readonly IReadOnlyDictionary<string, RuntimeProcedureFamily> _families;
 
+    /// <summary>
+    ///     Initializes a new instance from a deserialized manifest.
+    /// </summary>
+    /// <param name="manifest">the generation manifest to resolve routes against</param>
+    /// <exception cref="ArgumentNullException"><paramref name="manifest" /> is `null`.</exception>
     public RuntimeRouteResolver(RuntimeGenerationManifest manifest)
     {
         ArgumentNullException.ThrowIfNull(manifest);
@@ -15,6 +23,13 @@ public sealed class RuntimeRouteResolver
             StringComparer.Ordinal);
     }
 
+    /// <summary>
+    ///     Loads a manifest JSON file from disk and creates a <see cref="RuntimeRouteResolver" />.
+    /// </summary>
+    /// <param name="manifestPath">the absolute or relative path to the manifest JSON file</param>
+    /// <returns>A <see cref="RuntimeRouteResolver" /> backed by the loaded manifest.</returns>
+    /// <exception cref="ArgumentException"><paramref name="manifestPath" /> is `null` or whitespace.</exception>
+    /// <exception cref="InvalidOperationException">The manifest file could not be deserialized.</exception>
     public static RuntimeRouteResolver LoadFromManifestFile(string manifestPath)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(manifestPath);
@@ -29,6 +44,15 @@ public sealed class RuntimeRouteResolver
         return new RuntimeRouteResolver(manifest);
     }
 
+    /// <summary>
+    ///     Resolves the worker procedure for the given logical procedure name and axis values.
+    /// </summary>
+    /// <param name="logicalName">the logical procedure family name</param>
+    /// <param name="axisValues">a dictionary mapping axis names to their current values</param>
+    /// <returns>The matching <see cref="WorkerRoute" />.</returns>
+    /// <exception cref="ArgumentException"><paramref name="logicalName" /> is `null` or whitespace.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="axisValues" /> is `null`.</exception>
+    /// <exception cref="InvalidOperationException">No family or matching worker route was found.</exception>
     public WorkerRoute Resolve(string logicalName, IReadOnlyDictionary<string, string> axisValues)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(logicalName);

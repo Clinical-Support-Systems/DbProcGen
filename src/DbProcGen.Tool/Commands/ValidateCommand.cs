@@ -3,20 +3,32 @@ using DbProcGen.Tool.Services;
 
 namespace DbProcGen.Tool.Commands;
 
+/// <summary>
+///     Validates all `.dbproc.json` spec files in the `specs/` directory and reports diagnostics.
+/// </summary>
 public sealed class ValidateCommand : ICommand
 {
-    private readonly ISpecLoader _specLoader;
     private readonly IConsoleWriter _console;
+    private readonly ISpecLoader _specLoader;
 
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="ValidateCommand" /> class.
+    /// </summary>
+    /// <param name="specLoader">the loader used to read and parse spec files</param>
+    /// <param name="console">the console writer for output</param>
     public ValidateCommand(ISpecLoader specLoader, IConsoleWriter console)
     {
         _specLoader = specLoader ?? throw new ArgumentNullException(nameof(specLoader));
         _console = console ?? throw new ArgumentNullException(nameof(console));
     }
 
+    /// <inheritdoc />
     public string Name => "validate";
+
+    /// <inheritdoc />
     public string Description => "Validate all spec files";
 
+    /// <inheritdoc />
     public int Execute(string[] args)
     {
         var specsDirectory = Path.Combine(Environment.CurrentDirectory, "specs");

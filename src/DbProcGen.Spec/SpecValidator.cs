@@ -3,10 +3,23 @@ using DbProcGen.Model;
 
 namespace DbProcGen.Spec;
 
+/// <summary>
+///     Validates a parsed <see cref="DbProcSpec" /> against semantic rules, producing diagnostics
+///     for constraint violations such as invalid identifiers, missing references, and duplicates.
+/// </summary>
+/// <remarks>
+///     Diagnostic codes emitted by the validator range from `DBPROC100` through `DBPROC161`.
+/// </remarks>
 public static partial class SpecValidator
 {
     private static readonly Regex IdentifierRegex = SqlIdentifierRegex();
 
+    /// <summary>
+    ///     Validates the given spec and returns any semantic diagnostics, deterministically ordered.
+    /// </summary>
+    /// <param name="spec">the parsed spec to validate</param>
+    /// <returns>A deterministically ordered list of validation diagnostics.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="spec" /> is `null`.</exception>
     public static IReadOnlyList<SpecDiagnostic> Validate(DbProcSpec spec)
     {
         ArgumentNullException.ThrowIfNull(spec);

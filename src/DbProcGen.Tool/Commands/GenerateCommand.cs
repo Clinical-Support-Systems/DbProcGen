@@ -1,15 +1,25 @@
-using DbProcGen.Spec;
 using DbProcGen.Generator;
+using DbProcGen.Model;
+using DbProcGen.Spec;
 using DbProcGen.Tool.Services;
 
 namespace DbProcGen.Tool.Commands;
 
+/// <summary>
+///     Loads, validates, and generates SQL artifacts from all `.dbproc.json` specs in the `specs/` directory.
+/// </summary>
 public sealed class GenerateCommand : ICommand
 {
-    private readonly ISpecLoader _specLoader;
-    private readonly IArtifactGenerator _generator;
     private readonly IConsoleWriter _console;
+    private readonly IArtifactGenerator _generator;
+    private readonly ISpecLoader _specLoader;
 
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="GenerateCommand" /> class.
+    /// </summary>
+    /// <param name="specLoader">the loader used to read and parse spec files</param>
+    /// <param name="generator">the artifact generator</param>
+    /// <param name="console">the console writer for output</param>
     public GenerateCommand(ISpecLoader specLoader, IArtifactGenerator generator, IConsoleWriter console)
     {
         _specLoader = specLoader ?? throw new ArgumentNullException(nameof(specLoader));
@@ -17,9 +27,13 @@ public sealed class GenerateCommand : ICommand
         _console = console ?? throw new ArgumentNullException(nameof(console));
     }
 
+    /// <inheritdoc />
     public string Name => "generate";
+
+    /// <inheritdoc />
     public string Description => "Generate SQL artifacts from specs";
 
+    /// <inheritdoc />
     public int Execute(string[] args)
     {
         var specsDirectory = Path.Combine(Environment.CurrentDirectory, "specs");
@@ -44,7 +58,7 @@ public sealed class GenerateCommand : ICommand
 
         _console.WriteLine($"Loading and validating {specFiles.Length} spec file(s)...");
 
-        var validSpecs = new List<(string FilePath, DbProcGen.Model.DbProcSpec Spec)>();
+        var validSpecs = new List<(string FilePath, DbProcSpec Spec)>();
         var hasErrors = false;
 
         foreach (var specFile in specFiles)
@@ -76,7 +90,8 @@ public sealed class GenerateCommand : ICommand
             return 1;
         }
 
-        _console.WriteLine($"\nGenerating artifacts to {Path.GetRelativePath(Environment.CurrentDirectory, outputDirectory)}...");
+        _console.WriteLine(
+            $"\nGenerating artifacts to {Path.GetRelativePath(Environment.CurrentDirectory, outputDirectory)}...");
 
         var result = _generator.Generate(validSpecs.Select(s => s.Spec).ToArray(), outputDirectory);
 
@@ -88,7 +103,8 @@ public sealed class GenerateCommand : ICommand
 
         if (result.ManifestFile != null)
         {
-            _console.WriteLine($"\nManifest: {Path.GetRelativePath(Environment.CurrentDirectory, result.ManifestFile)}");
+            _console.WriteLine(
+                $"\nManifest: {Path.GetRelativePath(Environment.CurrentDirectory, result.ManifestFile)}");
         }
 
         if (result.DeletedFiles.Count > 0)
