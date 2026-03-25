@@ -3,3 +3,11 @@
 .squad/agents/*/history.md merge=union
 .squad/log/** merge=union
 .squad/orchestration-log/** merge=union
+
+# Normalize text files to LF in-repo to avoid CRLF/LF churn across platforms
+* text=auto eol=lf
+
+# Keep Windows script files with CRLF on checkout
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
