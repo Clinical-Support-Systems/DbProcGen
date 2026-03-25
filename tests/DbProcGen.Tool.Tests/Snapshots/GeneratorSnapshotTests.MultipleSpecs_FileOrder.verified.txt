@@ -6,5 +6,6 @@
   dbo_CharlieProc.sql,
   dbo_CharlieProc_charlie_worker.sql,
   dbo_ZebraProc.sql,
-  dbo_ZebraProc_zebra_worker.sql
+  dbo_ZebraProc_zebra_worker.sql,
+  generation-manifest.json
 ]

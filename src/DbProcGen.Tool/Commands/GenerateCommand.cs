@@ -85,6 +85,11 @@ public sealed class GenerateCommand : ICommand
             _console.WriteLine($"  {Path.GetRelativePath(Environment.CurrentDirectory, file)}");
         }
 
+        if (result.ManifestFile != null)
+        {
+            _console.WriteLine($"\nManifest: {Path.GetRelativePath(Environment.CurrentDirectory, result.ManifestFile)}");
+        }
+
         if (result.DeletedFiles.Count > 0)
         {
             _console.WriteLine($"\nCleaned up {result.DeletedFiles.Count} stale file(s):");

@@ -13,6 +13,21 @@
       "name": "IsPaged",
       "sqlType": "bit",
       "required": true
+    },
+    {
+      "name": "FilterValue",
+      "sqlType": "nvarchar(512)",
+      "required": false
+    },
+    {
+      "name": "PageSize",
+      "sqlType": "int",
+      "required": false
+    },
+    {
+      "name": "PageNumber",
+      "sqlType": "int",
+      "required": false
     }
   ],
   "resultContract": {

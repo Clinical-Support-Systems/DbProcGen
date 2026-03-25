@@ -6,6 +6,7 @@
     <DSP>Microsoft.Data.Tools.Schema.Sql.Sql170DatabaseSchemaProvider</DSP>
     <ModelCollation>1033, CI</ModelCollation>
     <ProjectGuid>8FE91EAA-850A-4F33-955C-7DD8E1B26719</ProjectGuid>
+    <EnableDefaultSqlItems>false</EnableDefaultSqlItems>
   </PropertyGroup>
 
   <ItemGroup>

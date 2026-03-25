@@ -85,6 +85,31 @@ All generated files are committed to source control. This ensures:
 - Reproducibility: the same spec + codebase always produces the same SQL
 - Simpler CI: detection of stale artifacts is straightforward
 
+#### SQL Compilability Requirement
+
+**Clarification (v1 binding):** All generated SQL must be syntactically valid and compilable by the SQL project build at all times, including when procedures use placeholder implementations. For example:
+
+```sql
+-- Placeholder during spec authoring:
+SELECT UserId int NOT NULL, DisplayName nvarchar(200) NOT NULL WHERE 1 = 0;
+```
+
+This ensures:
+- The DACPAC build never fails due to generated SQL stubs
+- Specs can be authored and committed incrementally
+- Implementation work can proceed on database schema while procedure bodies are filled in
+- Reviewers can see the complete generated shape even before implementation
+
+#### Generation Manifest
+
+**Clarification (v1 binding):** The generator must emit a deterministic manifest (e.g., `generation-manifest.json`) listing:
+- All generated procedure families
+- All worker variants and their route conditions
+- Wrapper and worker file paths
+- Sufficient detail for build verification and operational visibility
+
+The manifest is required (not optional) and is used by CI to verify that generated artifacts match the current spec state.
+
 ### 5. SQL Project Build
 
 **ADR Reference:** [ADR 0002 - SQL project as deployment source of truth](adr/0002-sqlproj-as-source-of-truth.md)
@@ -130,6 +155,7 @@ For each logical procedure, the system generates two types:
 - **Behavior:** Orchestration and routing only; minimal heavy query work
 - **Result contract:** Guaranteed to match the spec's declared result shape
 - **Commitment:** Breaking changes require a version bump or migration plan
+- **Routing:** v1 routing logic is generated and committed to SQL (visible in the wrapper procedure). Routing may use `IF/ELSE` branching or parameterized dispatch, determined at generation time and reviewed in PRs.
 
 Example:
 ```sql
@@ -309,6 +335,101 @@ The CI/CD pipeline can be configured to:
 5. **CLI simplicity first:** v1 uses a straightforward CLI tool; advanced integration (Roslyn, IDE tooling) follows once the core model is proven.
 
 6. **Reviewability and safety:** All generated SQL is visible in pull requests; DBAs and developers can inspect before deployment.
+
+## End-to-End Proof: GetUsersByFilter
+
+The repository includes a complete end-to-end proof for one procedure family that validates all ADR requirements:
+
+### Inputs
+
+**Spec file:** `specs/users/GetUsersByFilter.dbproc.json`
+- Declares two specialization axes: FilterType (Name/Email) and Paging (true/false)
+- Defines two routes: `name_paged` and `email_unpaged`
+- Specifies parameter and result contracts
+
+### Hand-Authored Schema Dependency
+
+**Location:** `database/Schema/Tables/Users.sql`
+
+The generated procedures depend on a pre-existing hand-authored table:
+```sql
+CREATE TABLE [dbo].[Users]
+(
+    [UserId] BIGINT NOT NULL PRIMARY KEY,
+    [UserName] NVARCHAR(256) NOT NULL,
+    [Email] NVARCHAR(512) NULL
+);
+```
+
+This separation—hand-authored schema in `Schema/`, generated procedures in `Generated/`—is enforced by ADR 0002 and prevents manual edits to generated files.
+
+### Generated Artifacts
+
+**Location:** `database/Generated/`
+
+1. **Wrapper procedure** (`dbo_GetUsersByFilter.sql`):
+   - Public SQL API with stable signature (FilterType, IsPaged, FilterValue, PageSize, PageNumber)
+   - **Concrete wrapper routing:** Uses `IF/ELSE` branching to dispatch based on FilterType and IsPaged
+   - Routes `Name + Paging=1` to `_name_paged` worker
+   - Routes `Email + Paging=0` to `_email_unpaged` worker
+   - Default route handles edge cases
+
+2. **Worker procedures** (specialized implementations):
+   - **`dbo_GetUsersByFilter_name_paged.sql`** (NamePaged route):
+     - Specialized for **paginated name searches** with `OFFSET/FETCH` for efficient paging
+     - Uses wildcard match (`LIKE`) on `UserName` from `dbo.Users`
+     - Includes `OFFSET` calculation to handle page boundaries without materializing all rows
+   - **`dbo_GetUsersByFilter_email_unpaged.sql`** (EmailUnpaged route):
+     - Specialized for **unpaged email lookups** with direct equality match
+     - Simple direct-execution `WHERE Email = @FilterValue` on `dbo.Users`
+     - No paging parameters or row-limit overhead
+   - Each contains route conditions in comments
+   - Each matches the wrapper's result contract (UserId, DisplayName)
+
+3. **Generation manifest** (`generation-manifest.json`):
+   - JSON document listing all generated families
+   - Shows which workers were emitted and why (route conditions)
+   - Deterministic format for build verification
+   - Enables ops visibility into generated variants
+
+### Hand-Authored SQL in the Proof
+
+The end-to-end proof also includes hand-authored SQL objects under `database/Schema/` that generated procedures are expected to depend on in real deployments:
+
+- `Tables/Users.sql` (base table)
+- `Views/UsersForGetUsersByFilter.sql` (projection-aligned query object for wrapper/worker result shape)
+
+These remain hand-maintained deployment assets and are intentionally separate from `database/Generated/` artifacts.
+
+### Key Design Visibility
+
+The example shows:
+
+| Aspect | Evidence | ADR |
+|--------|----------|-----|
+| **Concrete wrapper routing** | `IF @FilterType = 'Name' AND @IsPaged = 1 EXEC [dbo].[GetUsersByFilter_name_paged]...` in wrapper | ADR 0004 |
+| **Meaningful worker differences** | `_name_paged` uses `OFFSET/FETCH` (pagination); `_email_unpaged` uses direct equality without paging | ADR 0001 |
+| **Hand-authored schema dependency** | Both workers query `dbo.Users` (hand-authored in `Schema/Tables/Users.sql`) | ADR 0002 |
+| **Build-time generation** | `dotnet run --project src/DbProcGen.Tool -- generate` produces SQL at build time | ADR 0001 |
+| **SQL project source-of-truth** | All generated SQL in `database/Generated/`, included in `.sqlproj`, committed to git | ADR 0002 |
+| **Wrapper + workers** | One wrapper (`GetUsersByFilter`) + two workers with deterministic naming | ADR 0004 |
+| **Deterministic artifacts** | Stable file names, alphabetical ordering, auto-generated headers, stale file cleanup, manifest report | ADR 0005 |
+
+### Determinism Properties
+
+- **Stable naming:** `{schema}_{procedureName}.sql` for wrappers, `{schema}_{procedureName}_{workerSuffix}.sql` for workers
+- **Stable ordering:** Specs processed alphabetically by LogicalName; routes sorted by WorkerSuffix
+- **No timestamps:** Manifest uses constant "generation-manifest" value instead of timestamp
+- **Idempotent:** Running generation twice on same specs produces byte-for-byte identical output
+
+### Tests
+
+Comprehensive test coverage validates the proof:
+
+- **ArtifactGeneratorTests:** Wrapper/worker creation, stale file cleanup, deterministic ordering, manifest validation
+- **GeneratorSnapshotTests:** Snapshot verification of generated SQL content, file order, determinism across runs
+
+All tests use TUnit with async assertions.
 
 ## References
 

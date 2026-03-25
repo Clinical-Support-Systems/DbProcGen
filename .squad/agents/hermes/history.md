@@ -12,3 +12,8 @@
 - First-pass v1 spec model is implemented as strongly typed records in DbProcGen.Model, covering ADR 0003 minimum fields plus optional fragments.
 - Parser diagnostics are machine-friendly (`code`, `path`, `severity`, `message`) and deterministically ordered to keep CLI/build outputs stable.
 - Validation intentionally enforces structured naming/uniqueness/routing references without attempting SQL grammar parsing, matching ADR v1 scope limits.
+- SQL Database Projects with Microsoft.Build.Sql default-include SQL files unless `<EnableDefaultSqlItems>false</EnableDefaultSqlItems>` is set when explicit `<Build Include=...>` entries are used.
+- Placeholder result-contract emission must use SQL-valid projection expressions (typed `NULL` aliases) instead of column-definition syntax so generated procedures compile under sqlproj.
+- Generated procedure declarations should use sqlproj-compatible `CREATE PROCEDURE` in source artifacts to avoid parser errors during DACPAC build validation.
+- Wrapper routing can stay deterministic and reviewable by deriving direct branch predicates from specialization axes/route conditions and keeping route evaluation order stable from spec route order.
+- A practical v1 realism pattern is to keep wrapper contract stable while giving paged and unpaged workers materially different query shapes that both target existing hand-authored schema objects.

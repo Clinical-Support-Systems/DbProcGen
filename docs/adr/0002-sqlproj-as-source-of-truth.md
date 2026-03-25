@@ -54,6 +54,7 @@ This keeps generation as a build concern and deployment as a database project co
 - Generated SQL must live in a dedicated `Generated/` subtree.
 - Hand-authored SQL must remain clearly separated from generated SQL.
 - Post-deployment scripts are not the primary location for generated procedures.
+- **Generated SQL must be syntactically valid and compilable by the SQL project at all times**, including when using placeholder implementations (e.g., `WHERE 1 = 0` to return empty result sets matching the contract). Placeholders must not prevent SQL project compilation. This ensures the DACPAC build succeeds even for specs in progress.
 
 ## Alternatives considered
 

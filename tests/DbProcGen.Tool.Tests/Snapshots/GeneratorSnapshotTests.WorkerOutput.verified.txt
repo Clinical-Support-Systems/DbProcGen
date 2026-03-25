@@ -5,7 +5,7 @@
 --   Any changes to this file will be overwritten on next generation.
 -- </auto-generated>
 
-CREATE OR ALTER PROCEDURE [dbo].[UserSearch_active]
+CREATE PROCEDURE [dbo].[UserSearch_active]
     @SearchTerm nvarchar(100),
     @IncludeInactive bit
 AS
@@ -15,14 +15,11 @@ BEGIN
     -- Worker procedure for route: ActiveUsers
     -- Conditions: StatusAxis = 'Active'
     -- Specialized implementation for this parameter combination
-    
-    -- TODO: Implement specialized query logic
-    -- Placeholder: return empty result set matching contract
-    
+
     SELECT
-        UserId int NOT NULL,
-        Email nvarchar(256) NOT NULL,
-        IsActive bit NOT NULL
+        CAST(NULL AS int) AS [UserId],
+        CAST(NULL AS nvarchar(256)) AS [Email],
+        CAST(NULL AS bit) AS [IsActive]
     WHERE 1 = 0;
 END
 GO
@@ -33,7 +30,7 @@ GO
 --   Any changes to this file will be overwritten on next generation.
 -- </auto-generated>
 
-CREATE OR ALTER PROCEDURE [dbo].[UserSearch_all]
+CREATE PROCEDURE [dbo].[UserSearch_all]
     @SearchTerm nvarchar(100),
     @IncludeInactive bit
 AS
@@ -43,14 +40,11 @@ BEGIN
     -- Worker procedure for route: AllUsers
     -- Conditions: StatusAxis = 'All'
     -- Specialized implementation for this parameter combination
-    
-    -- TODO: Implement specialized query logic
-    -- Placeholder: return empty result set matching contract
-    
+
     SELECT
-        UserId int NOT NULL,
-        Email nvarchar(256) NOT NULL,
-        IsActive bit NOT NULL
+        CAST(NULL AS int) AS [UserId],
+        CAST(NULL AS nvarchar(256)) AS [Email],
+        CAST(NULL AS bit) AS [IsActive]
     WHERE 1 = 0;
 END
 GO

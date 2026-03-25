@@ -3,9 +3,12 @@
 --   Any changes to this file will be overwritten on next generation.
 -- </auto-generated>
 
-CREATE OR ALTER PROCEDURE [dbo].[GetUsersByFilter_name_paged]
+CREATE PROCEDURE [dbo].[GetUsersByFilter_name_paged]
     @FilterType nvarchar(32),
-    @IsPaged bit
+    @IsPaged bit,
+    @FilterValue nvarchar(512) = NULL,
+    @PageSize int = NULL,
+    @PageNumber int = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -13,13 +16,30 @@ BEGIN
     -- Worker procedure for route: NamePaged
     -- Conditions: FilterTypeAxis = 'Name' AND PagingAxis = 'true'
     -- Specialized implementation for this parameter combination
-    
-    -- TODO: Implement specialized query logic
-    -- Placeholder: return empty result set matching contract
-    
+
+    DECLARE @EffectivePageSize int = CASE
+        WHEN @PageSize IS NULL OR @PageSize < 1 THEN 25
+        ELSE @PageSize
+    END;
+
+    DECLARE @EffectivePageNumber int = CASE
+        WHEN @PageNumber IS NULL OR @PageNumber < 1 THEN 1
+        ELSE @PageNumber
+    END;
+
+    DECLARE @Offset int = (@EffectivePageNumber - 1) * @EffectivePageSize;
+
+    SET @PageSize = @EffectivePageSize;
+
     SELECT
-        UserId int NOT NULL,
-        DisplayName nvarchar(200) NOT NULL
-    WHERE 1 = 0;
+        CAST(u.[UserId] AS int) AS [UserId],
+        CAST(u.[UserName] AS nvarchar(200)) AS [DisplayName]
+    FROM [dbo].[Users] AS u
+    WHERE @FilterType = 'Name'
+      AND @FilterValue IS NOT NULL
+      AND u.[UserName] LIKE @FilterValue + '%'
+    ORDER BY u.[UserName], u.[UserId]
+    OFFSET @Offset ROWS
+    FETCH NEXT @PageSize ROWS ONLY;
 END
 GO

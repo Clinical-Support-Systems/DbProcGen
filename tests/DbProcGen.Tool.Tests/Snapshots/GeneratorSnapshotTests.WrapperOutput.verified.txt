@@ -3,7 +3,7 @@
 --   Any changes to this file will be overwritten on next generation.
 -- </auto-generated>
 
-CREATE OR ALTER PROCEDURE [dbo].[UserSearch]
+CREATE PROCEDURE [dbo].[UserSearch]
     @SearchTerm nvarchar(100),
     @IncludeInactive bit
 AS
@@ -12,14 +12,25 @@ BEGIN
 
     -- Wrapper procedure (public SQL API)
     -- Routes to specialized worker procedures based on parameter values
-    
-    -- TODO: Implement routing logic
-    -- Placeholder: return empty result set matching contract
-    
-    SELECT
-        UserId int NOT NULL,
-        Email nvarchar(256) NOT NULL,
-        IsActive bit NOT NULL
-    WHERE 1 = 0;
+
+    IF 1 = 0
+    BEGIN
+        EXEC [dbo].[UserSearch_active]
+            @SearchTerm = @SearchTerm,
+        @IncludeInactive = @IncludeInactive;
+        RETURN;
+    END
+
+    ELSE IF 1 = 0
+    BEGIN
+        EXEC [dbo].[UserSearch_all]
+            @SearchTerm = @SearchTerm,
+        @IncludeInactive = @IncludeInactive;
+        RETURN;
+    END
+
+    EXEC [dbo].[UserSearch_active]
+        @SearchTerm = @SearchTerm,
+        @IncludeInactive = @IncludeInactive;
 END
 GO

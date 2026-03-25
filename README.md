@@ -176,6 +176,74 @@ These ADRs are binding constraints for v1. For detailed context and rationale, s
 - **[ADR 0005](docs/adr/0005-deterministic-generated-artifacts.md)** — Commit deterministic artifacts to git
 - **[ADR 0006](docs/adr/0006-cli-first-roslyn-optional.md)** — CLI-first; Roslyn integration deferred
 
+## Status: End-to-End Proof Complete
+
+The repository demonstrates a complete end-to-end generation flow for one procedure family:
+
+**Example: GetUsersByFilter**
+- **Spec:** `specs/users/GetUsersByFilter.dbproc.json`
+- **Hand-authored schema objects:** 
+  - `database/Schema/Tables/Users.sql` (base user table)
+  - `database/Schema/Views/UsersForGetUsersByFilter.sql` (query projection)
+- **Generated artifacts:** `database/Generated/`
+  - Wrapper: `dbo_GetUsersByFilter.sql` (stable public API with concrete IF/ELSE routing)
+  - Workers: 
+    - `dbo_GetUsersByFilter_name_paged.sql` (paginated name search using OFFSET/FETCH)
+    - `dbo_GetUsersByFilter_email_unpaged.sql` (unpaged email lookup with direct equality)
+  - Manifest: `generation-manifest.json` (shows which variants were emitted and why)
+
+### Generated Shape and ADR Mapping
+
+This proof validates all binding ADRs with realistic, working SQL:
+
+| ADR | Requirement | Implementation |
+|-----|-------------|----------------|
+| [ADR 0001](docs/adr/0001-build-time-generation.md) | Build-time generation | CLI `generate` command reads specs, produces deterministic SQL at build time |
+| [ADR 0002](docs/adr/0002-sqlproj-as-source-of-truth.md) | SQL project source-of-truth; schema separation | Generated SQL in `database/Generated/`, hand-authored in `database/Schema/`, both included in `.sqlproj`, deployed via DACPAC |
+| [ADR 0004](docs/adr/0004-wrapper-and-worker-procedures.md) | Wrapper + workers with concrete routing | One public wrapper with explicit IF/ELSE branches routes to specialized workers (`name_paged`, `email_unpaged`) |
+| [ADR 0005](docs/adr/0005-deterministic-generated-artifacts.md) | Deterministic artifacts | All output deterministic: stable naming, ordering by LogicalName and WorkerSuffix, committed to git, manifest report |
+
+**Meaningful worker differences:**
+- **name_paged:** Uses `OFFSET/FETCH` paging for efficient paginated name searches
+- **email_unpaged:** Direct equality match without paging overhead, optimized for single-result lookups
+
+**Manifest example** (`database/Generated/generation-manifest.json`):
+```json
+{
+  "generatedAt": "generation-manifest",
+  "families": [
+    {
+      "logicalName": "GetUsersByFilter",
+      "schema": "dbo",
+      "publicProcedure": "GetUsersByFilter",
+      "wrapperFile": "dbo_GetUsersByFilter.sql",
+      "workers": [
+        {
+          "routeName": "EmailUnpaged",
+          "workerSuffix": "email_unpaged",
+          "workerFile": "dbo_GetUsersByFilter_email_unpaged.sql",
+          "conditions": [
+            { "axis": "FilterTypeAxis", "value": "Email" },
+            { "axis": "PagingAxis", "value": "false" }
+          ]
+        },
+        {
+          "routeName": "NamePaged",
+          "workerSuffix": "name_paged",
+          "workerFile": "dbo_GetUsersByFilter_name_paged.sql",
+          "conditions": [
+            { "axis": "FilterTypeAxis", "value": "Name" },
+            { "axis": "PagingAxis", "value": "true" }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+The manifest provides operational visibility: which worker procedures exist, under what conditions they're invoked, and a deterministic record of generation output for build verification.
+
 ## Status: Skeleton
 
 This repository currently contains placeholder projects and stub files to establish ADR-constrained structure.

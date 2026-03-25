@@ -1,0 +1,43 @@
+{
+  "generatedAt": "generation-manifest",
+  "families": [
+    {
+      "logicalName": "GetUsersByFilter",
+      "schema": "dbo",
+      "publicProcedure": "GetUsersByFilter",
+      "wrapperFile": "dbo_GetUsersByFilter.sql",
+      "workers": [
+        {
+          "routeName": "EmailUnpaged",
+          "workerSuffix": "email_unpaged",
+          "workerFile": "dbo_GetUsersByFilter_email_unpaged.sql",
+          "conditions": [
+            {
+              "axis": "FilterTypeAxis",
+              "value": "Email"
+            },
+            {
+              "axis": "PagingAxis",
+              "value": "false"
+            }
+          ]
+        },
+        {
+          "routeName": "NamePaged",
+          "workerSuffix": "name_paged",
+          "workerFile": "dbo_GetUsersByFilter_name_paged.sql",
+          "conditions": [
+            {
+              "axis": "FilterTypeAxis",
+              "value": "Name"
+            },
+            {
+              "axis": "PagingAxis",
+              "value": "true"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

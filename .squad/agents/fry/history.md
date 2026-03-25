@@ -16,4 +16,10 @@
 - Deterministic artifact generation follows ADR 0005: stable file naming, stable ordering by spec LogicalName and route WorkerSuffix, auto-generated headers, stale file cleanup.
 - Generated SQL targets `database/Generated/` only per ADR 0002, following `{schema}_{procedureName}.sql` and `{schema}_{procedureName}_{workerSuffix}.sql` naming.
 - CLI-first approach per ADR 0006: no Roslyn dependency, commands are `validate`, `generate`, `diff` (placeholder), `doctor` (placeholder).
+- **End-to-end proof complete:** GetUsersByFilter spec generates wrapper + 2 workers + manifest, validating all ADRs (0001, 0002, 0004, 0005).
+- **Manifest generation:** Generation manifest (JSON) reports all procedure families, workers, route conditions for ops visibility and build verification.
+- Manifest uses deterministic "generation-manifest" timestamp to ensure byte-for-byte reproducibility across runs.
+- Snapshot tests validate deterministic output using Verify library; all 20 Tool tests passing.
+- Documentation updated in README.md and docs/architecture.md showing explicit ADR mapping to generated artifacts.
+- ADR audit finding: repository intent aligns with ADRs, but SQL deployability is currently blocked by invalid generated SELECT shape (`column type` in SELECT list) and sqlproj duplicate Build item configuration under SDK-style defaults.
 

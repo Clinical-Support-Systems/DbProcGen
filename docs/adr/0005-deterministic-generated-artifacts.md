@@ -53,6 +53,11 @@ Determinism is required so that running generation twice produces the same outpu
 - Emission order must be deterministic.
 - CI should fail if generation changes tracked files unexpectedly.
 - Manual edits inside generated folders are not allowed.
+- **A generation manifest (e.g., `generation-manifest.json`) must be emitted** listing all generated procedure families, their worker variants, and route conditions. This manifest is required in v1 for:
+  - Build verification: CI can compare manifest against specs to detect stale artifacts
+  - Operational visibility: DBAs and ops can understand which variants exist and under what conditions
+  - Deterministic audit trail: the manifest is deterministic and committed to git
+  - The manifest format is defined by the generator; its presence and determinism are mandatory
 
 ## Alternatives considered
 

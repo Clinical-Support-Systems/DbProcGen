@@ -23,10 +23,10 @@ DbProcGen uses **build-time generation** to produce deterministic, version-contr
 - No procedural code generation outside the generator's control
 
 ### Open Questions (within ADR bounds)
-- **Routing logic:** Wrapper-to-worker dispatch can be in SQL (stored proc) or .NET (ORM logic); either approach is compatible
+- **Routing logic:** Wrapper-to-worker dispatch must be in generated SQL (visible and reviewable); routing may use `IF/ELSE`, parameterized dispatch, or other SQL constructs determined at generation time. .NET-side routing helpers are deferred to v2.
 - **Worker naming:** Deterministic derivation from specialization axes; exact scheme TBD in spec schema
 - **Specialization axes:** Which plan-shaping dimensions are worth specializing (e.g., paging, cardinality, business branches); to be defined per spec family
-- **Manifests:** Format and scope of optional generated metadata/reports for ops visibility
+- **Manifests:** Format and scope of mandatory generated metadata/reports for ops visibility; manifest is required (not optional) in v1
 
 ## Active Decisions
 

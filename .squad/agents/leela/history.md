@@ -14,3 +14,5 @@
 - Line ending normalization (CRLF→LF) ensures cross-platform test stability.
 - Temporary directory fixtures keep test runs isolated from repo working tree.
 - Verify auto-creates `.received.txt` on first run; copy to `.verified.txt` to accept baseline.
+- E2E realism gates should assert concrete wrapper dispatch, material worker differences, and explicit references to hand-authored schema objects so placeholder SQL regressions fail fast.
+- Keep realism proof deterministic by snapshotting wrapper + worker + manifest bundle with stable key order and normalized line endings.

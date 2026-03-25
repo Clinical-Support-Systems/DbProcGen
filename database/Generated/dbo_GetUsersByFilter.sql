@@ -3,22 +3,46 @@
 --   Any changes to this file will be overwritten on next generation.
 -- </auto-generated>
 
-CREATE OR ALTER PROCEDURE [dbo].[GetUsersByFilter]
+CREATE PROCEDURE [dbo].[GetUsersByFilter]
     @FilterType nvarchar(32),
-    @IsPaged bit
+    @IsPaged bit,
+    @FilterValue nvarchar(512) = NULL,
+    @PageSize int = NULL,
+    @PageNumber int = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
 
     -- Wrapper procedure (public SQL API)
     -- Routes to specialized worker procedures based on parameter values
-    
-    -- TODO: Implement routing logic
-    -- Placeholder: return empty result set matching contract
-    
-    SELECT
-        UserId int NOT NULL,
-        DisplayName nvarchar(200) NOT NULL
-    WHERE 1 = 0;
+
+    IF @FilterType = 'Name' AND @IsPaged = 1
+    BEGIN
+        EXEC [dbo].[GetUsersByFilter_name_paged]
+            @FilterType = @FilterType,
+        @IsPaged = @IsPaged,
+        @FilterValue = @FilterValue,
+        @PageSize = @PageSize,
+        @PageNumber = @PageNumber;
+        RETURN;
+    END
+
+    ELSE IF @FilterType = 'Email' AND @IsPaged = 0
+    BEGIN
+        EXEC [dbo].[GetUsersByFilter_email_unpaged]
+            @FilterType = @FilterType,
+        @IsPaged = @IsPaged,
+        @FilterValue = @FilterValue,
+        @PageSize = @PageSize,
+        @PageNumber = @PageNumber;
+        RETURN;
+    END
+
+    EXEC [dbo].[GetUsersByFilter_name_paged]
+        @FilterType = @FilterType,
+        @IsPaged = @IsPaged,
+        @FilterValue = @FilterValue,
+        @PageSize = @PageSize,
+        @PageNumber = @PageNumber;
 END
 GO

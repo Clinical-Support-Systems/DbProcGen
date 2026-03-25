@@ -3,9 +3,12 @@
 --   Any changes to this file will be overwritten on next generation.
 -- </auto-generated>
 
-CREATE OR ALTER PROCEDURE [dbo].[GetUsersByFilter_email_unpaged]
+CREATE PROCEDURE [dbo].[GetUsersByFilter_email_unpaged]
     @FilterType nvarchar(32),
-    @IsPaged bit
+    @IsPaged bit,
+    @FilterValue nvarchar(512) = NULL,
+    @PageSize int = NULL,
+    @PageNumber int = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -13,13 +16,14 @@ BEGIN
     -- Worker procedure for route: EmailUnpaged
     -- Conditions: FilterTypeAxis = 'Email' AND PagingAxis = 'false'
     -- Specialized implementation for this parameter combination
-    
-    -- TODO: Implement specialized query logic
-    -- Placeholder: return empty result set matching contract
-    
+
     SELECT
-        UserId int NOT NULL,
-        DisplayName nvarchar(200) NOT NULL
-    WHERE 1 = 0;
+        CAST(u.[UserId] AS int) AS [UserId],
+        CAST(u.[Email] AS nvarchar(200)) AS [DisplayName]
+    FROM [dbo].[Users] AS u
+    WHERE @FilterType = 'Email'
+      AND @FilterValue IS NOT NULL
+      AND u.[Email] = @FilterValue
+    ORDER BY u.[Email], u.[UserId];
 END
 GO
