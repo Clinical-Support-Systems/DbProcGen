@@ -424,6 +424,9 @@ FodyWeavers.xsd
 # Squad: SubSquad activation file (local to this machine)
 .squad-workstream
 
+# Claude Code local settings (never commit)
+.claude/settings.local.json
+
 # DbProcGen local/tooling
 /.idea/
 /.vs/
