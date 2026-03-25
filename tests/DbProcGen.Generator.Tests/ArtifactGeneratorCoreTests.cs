@@ -2,7 +2,7 @@ using DbProcGen.Model;
 
 namespace DbProcGen.Generator.Tests;
 
-public class SkeletonTests
+public class ArtifactGeneratorCoreTests
 {
     [Test]
     public async Task Generate_ProducesManifestAndExpectedFiles()

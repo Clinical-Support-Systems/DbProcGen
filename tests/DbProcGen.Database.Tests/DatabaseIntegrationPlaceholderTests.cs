@@ -2,7 +2,7 @@ using System.Diagnostics;
 
 namespace DbProcGen.Database.Tests;
 
-public class SkeletonTests
+public class DatabaseIntegrationPlaceholderTests
 {
     [Test]
     public async Task PlaceholderIntegration_SqlProjectBuild_Succeeds()

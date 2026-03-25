@@ -180,6 +180,10 @@ dotnet build database\DbProcGen.Database.sqlproj
 
 GitHub Actions CI (`.github/workflows/ci.yml`) enforces the initial testing and verification strategy with explicit ADR mapping:
 
+- **CI job matrix includes dedicated runtime helper coverage**
+  - Build, spec tests, snapshot tests, database integration tests, runtime helper tests, regeneration guard, SQL project build, and Slopwatch run as separate jobs.
+  - This keeps failures localized and reviewable while preserving ADR traceability per gate.
+
 - **Parsing/validation unit tests** (`tests/DbProcGen.Spec.Tests`)  
   - Verifies JSON spec shape and semantic validation behavior.
   - Tied to **ADR 0001** (build-time generation pipeline) and **ADR 0003** (JSON spec format).
