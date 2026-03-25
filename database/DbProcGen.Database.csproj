@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="MSBuild.Sdk.SqlProj/4.0.0">
+  <PropertyGroup>
+    <Name>DbProcGen.Database</Name>
+    <ModelCollation>1033, CI</ModelCollation>
+    <SqlServerVersion>Sql160</SqlServerVersion>
+    <EnableDefaultItems>false</EnableDefaultItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Schema\**\*.sql" />
+    <Content Include="Generated\**\*.sql" />
+  </ItemGroup>
+</Project>

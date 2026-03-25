@@ -174,7 +174,7 @@ jobs:
         run: dotnet restore DbProcGen.slnx
 
       - name: Build SQL project (ADR 0002)
-        run: dotnet build database/DbProcGen.Database.sqlproj --nologo
+        run: dotnet build database/DbProcGen.Database.csproj --nologo
 
   slopwatch:
     runs-on: ubuntu-latest
@@ -198,3 +198,4 @@ jobs:
 
       - name: Slopwatch analysis
         run: slopwatch analyze -d . --fail-on error --output json
+

@@ -25,7 +25,7 @@ This project focuses on:
 
 - **Spec format:** JSON-based declarative procedure definitions (`*.dbproc.json`)
 - **Generation:** CLI-first tool to read specs and emit deterministic SQL artifacts
-- **Deployment:** SQL Database Project (`.sqlproj`) as the source of truth
+- **Deployment:** SQL Database Project (`database/DbProcGen.Database.csproj` via `MSBuild.Sdk.SqlProj`) as the source of truth
 - **Output:** Wrapper procedures (stable public API) + specialized worker procedures (implementation variants)
 - **Runtime:** Manifest-based .NET route resolver for diagnostics and preflight route checks
 - **Validation:** Build-time checks to ensure generated SQL is deterministic and consistent
@@ -53,7 +53,7 @@ tests/
   DbProcGen.Database.Tests/   # Database integration tests
 
 database/
-  DbProcGen.Database.sqlproj  # SQL project (build target for deployment)
+  DbProcGen.Database.csproj  # SQL project (build target for deployment)
   Schema/                     # Hand-authored schema (tables, views, etc.)
   Generated/                  # Generated SQL only (deterministic, checked-in)
 
@@ -72,7 +72,7 @@ flowchart LR
     A["JSON Spec\n.dbproc.json"] -->|parse| B["Validate\nParse + Semantic\nChecks"]
     B -->|valid| C["Generate\nWrapper + Worker\nSQL Files"]
     C --> D["database/Generated/\nDeterministic SQL"]
-    D --> E["Build\n.sqlproj → DACPAC"]
+    D --> E["Build\nSQL project (.csproj) → DACPAC"]
     E --> F["Review\nPR with Exact SQL"]
     F --> G["Deploy\nSQL Server /\nAzure SQL"]
 ```
@@ -80,7 +80,7 @@ flowchart LR
 1. **Author spec** — Write a `.dbproc.json` in `specs/`
 2. **Generate** — `dotnet run --project src/DbProcGen.Tool -- generate` reads, validates, and emits SQL
 3. **Generated SQL** — Deterministic files appear in `database/Generated/`
-4. **Build** — `dotnet build database/DbProcGen.Database.sqlproj` compiles into a DACPAC
+4. **Build** — `dotnet build database/DbProcGen.Database.csproj` compiles into a DACPAC
 5. **Review** — PR shows exact SQL changes for code review
 6. **Deploy** — Standard DACPAC deployment to SQL Server / Azure SQL
 7. **Runtime diagnostics (optional)** — resolve expected worker routes from committed manifest data in .NET
@@ -176,7 +176,7 @@ dotnet test --project tests\DbProcGen.Database.Tests
 dotnet test --solution DbProcGen.slnx
 
 # Build SQL project (compiles Schema/ + Generated/ into DACPAC)
-dotnet build database\DbProcGen.Database.sqlproj
+dotnet build database\DbProcGen.Database.csproj
 ```
 
 ## CI Strategy (ADR-aligned)
@@ -218,7 +218,7 @@ GitHub Actions CI (`.github/workflows/ci.yml`) enforces the initial testing and 
 - Build the SQL project separately when needed:
 
 ```bash
-dotnet build database/DbProcGen.Database.sqlproj
+dotnet build database/DbProcGen.Database.csproj
 ```
 
 ## Specs
@@ -263,7 +263,7 @@ Current implementation demonstrates binding ADR alignment with concrete generate
 | ADR | Requirement | Implementation |
 |-----|-------------|----------------|
 | [ADR 0001](docs/adr/0001-build-time-generation.md) | Build-time generation | CLI `generate` command reads specs, produces deterministic SQL at build time |
-| [ADR 0002](docs/adr/0002-sqlproj-as-source-of-truth.md) | SQL project source-of-truth; schema separation | Generated SQL in `database/Generated/`, hand-authored in `database/Schema/`, both included in `.sqlproj`, deployed via DACPAC |
+| [ADR 0002](docs/adr/0002-sqlproj-as-source-of-truth.md) | SQL project source-of-truth; schema separation | Generated SQL in `database/Generated/`, hand-authored in `database/Schema/`, both included in `database/DbProcGen.Database.csproj`, deployed via DACPAC |
 | [ADR 0004](docs/adr/0004-wrapper-and-worker-procedures.md) | Wrapper + workers with concrete routing | One public wrapper with explicit IF/ELSE branches routes to specialized workers (`name_paged`, `email_unpaged`) |
 | [ADR 0005](docs/adr/0005-deterministic-generated-artifacts.md) | Deterministic artifacts | All output deterministic: stable naming, ordering by LogicalName and WorkerSuffix, committed to git, manifest report |
 | [ADR 0007](docs/adr/0007-runtime-manifest-routing-helper-v1.md) | Runtime helper in v1 | `RuntimeRouteResolver` resolves manifest routes (`Name+Paged -> name_paged`, `Email+Unpaged -> email_unpaged`) |
@@ -333,3 +333,4 @@ If `DBPROCGEN_ENABLE_TESTCONTAINERS_SQL` is not set to `true`, execution-level t
 - This keeps diagnostics and execution semantics consistent with ADR 0004 + ADR 0007 authority boundaries (SQL executes, runtime advises).
 
 For end-to-end architecture and design principles, see [docs/architecture.md](docs/architecture.md).
+

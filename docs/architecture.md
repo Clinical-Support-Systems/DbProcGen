@@ -78,7 +78,7 @@ All output is deterministic: running generation twice on the same specs produces
 Generated SQL files are written to `database/Generated/` with:
 - Fixed, deterministic names derived from spec names and worker variants
 - Auto-generated headers indicating they are auto-generated (do not edit)
-- Included in the SQL project (`DbProcGen.Database.sqlproj`)
+- Included in the SQL project (`DbProcGen.Database.csproj`)
 
 All generated files are committed to source control. This ensures:
 - Pull requests show exact SQL changes for review
@@ -115,7 +115,7 @@ The manifest is required (not optional) and is used by CI to verify that generat
 
 **ADR Reference:** [ADR 0002 - SQL project as deployment source of truth](adr/0002-sqlproj-as-source-of-truth.md)
 
-The SQL project (`database/DbProcGen.Database.sqlproj`) includes:
+The SQL project (`database/DbProcGen.Database.csproj`) includes:
 - `Schema/` — hand-authored tables, indexes, views
 - `Generated/` — auto-generated wrapper and worker procedures
 
@@ -318,7 +318,7 @@ dotnet test --project tests/DbProcGen.Database.Tests      # SQL + stored proc be
 dotnet test --project tests/DbProcGen.Runtime.Tests       # Optional runtime helpers
 
 # 5. Build SQL project (generates DACPAC)
-dotnet build database/DbProcGen.Database.sqlproj
+dotnet build database/DbProcGen.Database.csproj
 
 # 6. Commit and open PR
 git add specs/ database/Generated/
@@ -428,7 +428,7 @@ The example shows:
 | **Meaningful worker differences** | `_name_paged` uses `OFFSET/FETCH` (pagination); `_email_unpaged` uses direct equality without paging | ADR 0001 |
 | **Hand-authored schema dependency** | Both workers query `dbo.Users` (hand-authored in `Schema/Tables/Users.sql`) | ADR 0002 |
 | **Build-time generation** | `dotnet run --project src/DbProcGen.Tool -- generate` produces SQL at build time | ADR 0001 |
-| **SQL project source-of-truth** | All generated SQL in `database/Generated/`, included in `.sqlproj`, committed to git | ADR 0002 |
+| **SQL project source-of-truth** | All generated SQL in `database/Generated/`, included in `database/DbProcGen.Database.csproj`, committed to git | ADR 0002 |
 | **Wrapper + workers** | One wrapper (`GetUsersByFilter`) + two workers with deterministic naming | ADR 0004 |
 | **Deterministic artifacts** | Stable file names, alphabetical ordering, auto-generated headers, stale file cleanup, manifest report | ADR 0005 |
 | **Runtime helper continuity** | Manifest-driven route resolution in `DbProcGen.Runtime` (`RuntimeRouteResolver`) | ADR 0007 |
@@ -462,4 +462,5 @@ All tests use TUnit with async assertions.
 - [ADR 0006](adr/0006-cli-first-roslyn-optional.md) — CLI-first approach
 - [ADR 0007](adr/0007-runtime-manifest-routing-helper-v1.md) — Runtime helper scope and explicit failure semantics
 - [specs/README.md](../specs/README.md) — How to write specs
+
 

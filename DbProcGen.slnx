@@ -1,12 +1,28 @@
 <Solution>
-  <Project Path="src/DbProcGen.Generator/DbProcGen.Generator.csproj" />
-  <Project Path="src/DbProcGen.Model/DbProcGen.Model.csproj" />
-  <Project Path="src/DbProcGen.Runtime/DbProcGen.Runtime.csproj" />
-  <Project Path="src/DbProcGen.Spec/DbProcGen.Spec.csproj" />
-  <Project Path="src/DbProcGen.Tool/DbProcGen.Tool.csproj" />
-  <Project Path="tests/DbProcGen.Generator.Tests/DbProcGen.Generator.Tests.csproj" />
-  <Project Path="tests/DbProcGen.Spec.Tests/DbProcGen.Spec.Tests.csproj" />
-  <Project Path="tests/DbProcGen.Runtime.Tests/DbProcGen.Runtime.Tests.csproj" />
-  <Project Path="tests/DbProcGen.Database.Tests/DbProcGen.Database.Tests.csproj" />
-  <Project Path="database/DbProcGen.Database.sqlproj" />
+  <Folder Name="/tests/">
+    <Project Path="tests/DbProcGen.Database.Tests/DbProcGen.Database.Tests.csproj" />
+    <Project Path="tests/DbProcGen.Generator.Tests/DbProcGen.Generator.Tests.csproj" />
+    <Project Path="tests/DbProcGen.Runtime.Tests/DbProcGen.Runtime.Tests.csproj" />
+    <Project Path="tests/DbProcGen.Spec.Tests/DbProcGen.Spec.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitattributes" />
+    <File Path=".gitignore" />
+    <File Path=".mcp.json" />
+    <File Path="CLAUDE.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+    <File Path="LICENSE" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="database/DbProcGen.Database.csproj" />
+    <Project Path="src/DbProcGen.Generator/DbProcGen.Generator.csproj" />
+    <Project Path="src/DbProcGen.Model/DbProcGen.Model.csproj" />
+    <Project Path="src/DbProcGen.Runtime/DbProcGen.Runtime.csproj" />
+    <Project Path="src/DbProcGen.Spec/DbProcGen.Spec.csproj" />
+    <Project Path="src/DbProcGen.Tool/DbProcGen.Tool.csproj" />
+  </Folder>
 </Solution>

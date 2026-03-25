@@ -11,7 +11,7 @@ public class DatabaseIntegrationPlaceholderTests
     public async Task PlaceholderIntegration_SqlProjectBuild_Succeeds()
     {
         var repoRoot = FindRepoRoot();
-        var sqlProjPath = Path.Combine(repoRoot, "database", "DbProcGen.Database.sqlproj");
+        var sqlProjPath = Path.Combine(repoRoot, "database", "DbProcGen.Database.csproj");
 
         var result = RunProcess(
             "dotnet",
@@ -218,3 +218,4 @@ public class DatabaseIntegrationPlaceholderTests
         return (process.ExitCode, standardOutput + standardError);
     }
 }
+

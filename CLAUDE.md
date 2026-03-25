@@ -47,7 +47,7 @@ dotnet run --project src/DbProcGen.Tool -- generate|validate|clean
 - **Wrapper + worker pattern** — One stable public procedure (wrapper) routes to specialized internal workers.
 - **CLI-first** — v1 is a standalone CLI tool; Roslyn source generator integration is deferred.
 - **JSON specs only** — v1 uses JSON (in `specs/` directory); YAML support deferred.
-- **DACPAC deployment** — The `database/DbProcGen.Database.sqlproj` compiles hand-authored schema + generated procedures into a DACPAC.
+- **DACPAC deployment** — The `database/DbProcGen.Database.csproj` compiles hand-authored schema + generated procedures into a DACPAC.
 
 ## Conventions
 
@@ -58,4 +58,5 @@ dotnet run --project src/DbProcGen.Tool -- generate|validate|clean
 - Spec files live under `specs/` with `.dbproc.json` extension
 - Hand-authored SQL goes in `database/Schema/`; generated SQL goes in `database/Generated/`
 - Solution file is the newer `.slnx` format (`DbProcGen.slnx`)
+
 

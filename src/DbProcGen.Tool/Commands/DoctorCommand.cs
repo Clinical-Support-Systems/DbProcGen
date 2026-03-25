@@ -35,7 +35,7 @@ public sealed class DoctorCommand : ICommand
 
         allOk &= CheckDirectory("specs", currentDirectory);
         allOk &= CheckDirectory("database", currentDirectory);
-        allOk &= CheckFile("database\\DbProcGen.Database.sqlproj", currentDirectory);
+        allOk &= CheckFile("database\\DbProcGen.Database.csproj", currentDirectory);
 
         var generatedDir = Path.Combine(currentDirectory, "database", "Generated");
         if (Directory.Exists(generatedDir))
@@ -79,3 +79,4 @@ public sealed class DoctorCommand : ICommand
         return false;
     }
 }
+

@@ -15,7 +15,7 @@ dotnet test tests/DbProcGen.Spec.Tests
 dotnet test tests/DbProcGen.Spec.Tests --filter "ParseAndValidate_ValidSpec_IsValidWithNoDiagnostics"
 
 # SQL project (DACPAC)
-dotnet build database/DbProcGen.Database.sqlproj
+dotnet build database/DbProcGen.Database.csproj
 
 # CLI workflow
 dotnet run --project src/DbProcGen.Tool -- doctor
@@ -32,7 +32,7 @@ End-to-end flow:
 2. Parsed specs are validated by `SpecValidator` (semantic rules).
 3. `SpecDocumentFactory.ParseAndValidate` merges parse + validation diagnostics in deterministic order.
 4. The generator emits wrapper + worker procedures and a generation manifest into `database/Generated/`.
-5. `database/DbProcGen.Database.sqlproj` compiles hand-authored schema + generated SQL into a DACPAC.
+5. `database/DbProcGen.Database.csproj` compiles hand-authored schema + generated SQL into a DACPAC.
 
 Project roles:
 - `DbProcGen.Model`: immutable spec domain records.
@@ -53,3 +53,4 @@ Project roles:
 - Target stack is .NET 10 + C# preview with nullable enabled and implicit usings.
 - Package versions are centrally managed in `Directory.Packages.props` (not per-project).
 - The CLI resolves `specs/` and `database/` relative to the current working directory; run it from repo root.
+
